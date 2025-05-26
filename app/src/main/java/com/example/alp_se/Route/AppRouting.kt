@@ -1,5 +1,8 @@
 package com.example.alp_se.Route
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -7,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.alp_se.View.HomeView
+import com.example.alp_se.View.ListItineraryView
 
 enum class listScreen(){
     HomeView,
@@ -29,11 +34,17 @@ fun AppRouting() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(route = listScreen.HomeView.name) {
-//                SplashScreen(onSplashFinish = {
-//                    NavController.navigate(listScreen.OnBoardingScreen.name) {
-//                        popUpTo(listScreen.SplashScreen.name) { inclusive = true }
-//                    }
-//                })
+                HomeView(onSplashFinish = {
+                    NavController.navigate(listScreen.HomeView.name) {
+                        popUpTo(listScreen.HomeView.name) { inclusive = true }
+                    }
+                })
+            }
+
+            composable(
+                route = listScreen.ListItineraryView.name,
+            ) {
+                ListItineraryView()
             }
         }
     }
