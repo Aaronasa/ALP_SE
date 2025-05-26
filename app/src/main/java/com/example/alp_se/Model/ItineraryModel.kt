@@ -8,9 +8,9 @@ data class GetAllItineraryResponse(
 
 data class ItineraryModel(
     val itinerary_id: Int = 0,
-    val name: String = "",
-    val start_time: String = "",
-    val end_time: String = "",
+    val title: String = "",
+    val start_date: String = "",
+    val end_date: String = "",
     val date: String = "",
     val estimate_Start: String = "",
     val estimate_End: String = "",
