@@ -1,5 +1,19 @@
 package com.example.alp_se.Model
 
+data class UserResponses(
+    val data: List<UserModel>
+)
+
+data class EmailRequest(
+    val email: String
+)
+
+data class UserResponse(
+    val data: UserModel?,
+    val status: String,
+    val message: String?
+)
+
 data class UserModel(
     val id: Int,
     val username: String,
@@ -8,7 +22,6 @@ data class UserModel(
     val roleId: Int
 )
 
-// Request model for login
 data class LoginRequest(
     val email: String,
     val password: String
