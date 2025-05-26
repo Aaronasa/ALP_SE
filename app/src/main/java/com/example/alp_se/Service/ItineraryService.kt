@@ -3,9 +3,7 @@ package com.example.alp_se.Service
 import com.example.alp_se.Model.CreateItineraryRequest
 import com.example.alp_se.Model.GeneralResponseModel
 import com.example.alp_se.Model.GetAllItineraryResponse
-import com.example.alp_se.Model.ItineraryModel
 import com.example.alp_se.Model.UpdateItineraryRequest
-import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
