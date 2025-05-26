@@ -17,11 +17,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,55 +45,196 @@ import com.example.alp_se.Model.ItineraryModel
 fun ListItineraryView() {
     // Sample data untuk preview
     val sampleItineraries = listOf(
-
-    ItineraryModel(
+        ItineraryModel(
             title = "Liburan Bali",
             start_date = "20 Dec",
             end_date = "22 Dec",
             location = "Denpasar, Bali",
             total_person = 5
         ),
-    ItineraryModel(
+        ItineraryModel(
             title = "Jakarta Business Trip",
-        start_date = "15 Jan",
-        end_date = "18 Jan",
+            start_date = "15 Jan",
+            end_date = "18 Jan",
             location = "Jakarta, Indonesia",
-        total_person = 3
+            total_person = 3
         ),
-    ItineraryModel(
+        ItineraryModel(
             title = "Yogyakarta Cultural Tour",
-        start_date = "05 Feb",
-        end_date = "07 Feb",
+            start_date = "05 Feb",
+            end_date = "07 Feb",
             location = "Yogyakarta, Indonesia",
-        total_person = 8
+            total_person = 8
         ),
-    ItineraryModel(
+        ItineraryModel(
             title = "Bandung Adventure",
-        start_date = "12 Mar",
-        end_date = "14 Mar",
+            start_date = "12 Mar",
+            end_date = "14 Mar",
             location = "Bandung, Jawa Barat",
-        total_person = 4
+            total_person = 4
         )
     )
 
-    LazyColumn(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
-            .padding(vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF667eea),
+                        Color(0xFFF5F5F5)
+                    )
+                )
+            )
     ) {
-        items(sampleItineraries) { itinerary ->
-            ItineraryCard(
-                title = itinerary.title,
-                startDate = itinerary.start_date,
-                endDate = itinerary.end_date,
-                location = itinerary.location,
-                participantCount = itinerary.total_person
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Header Section
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 40.dp, bottom = 20.dp, start = 24.dp, end = 24.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Icon with background
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .background(
+                                color = Color.White.copy(alpha = 0.2f),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.TravelExplore,
+                            contentDescription = "Travel",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Title
+                    Text(
+                        text = "My Itineraries",
+                        color = Color.White,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Subtitle
+                    Text(
+                        text = "Explore your upcoming adventures",
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Stats Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        StatItem(
+                            count = sampleItineraries.size.toString(),
+                            label = "Trips"
+                        )
+                        StatItem(
+                            count = sampleItineraries.sumOf { it.total_person }.toString(),
+                            label = "Total People"
+                        )
+                        StatItem(
+                            count = "4",
+                            label = "Countries"
+                        )
+                    }
+                }
+            }
+
+            // List Section
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        color = Color(0xFFF5F5F5),
+                        shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                    )
+                    .padding(top = 20.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(sampleItineraries) { itinerary ->
+                    ItineraryCard(
+                        title = itinerary.title,
+                        startDate = itinerary.start_date,
+                        endDate = itinerary.end_date,
+                        location = itinerary.location,
+                        participantCount = itinerary.total_person
+                    )
+                }
+
+                // Bottom spacing
+                item {
+                    Spacer(modifier = Modifier.height(20.dp))
+                }
+            }
+        }
+
+        // Floating Action Button
+        FloatingActionButton(
+            onClick = {
+                // TODO: Navigate to create itinerary screen
+            },
+            shape = CircleShape,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp),
+            containerColor = Color(0xFF667eea),
+            contentColor = Color.White
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = "Create Itinerary",
+                modifier = Modifier.size(70.dp)
             )
         }
     }
 }
+
+@Composable
+private fun StatItem(
+    count: String,
+    label: String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = count,
+            color = Color.White,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = label,
+            color = Color.White.copy(alpha = 0.8f),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun ListItineraryViewPreview() {
