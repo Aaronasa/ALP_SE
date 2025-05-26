@@ -19,7 +19,6 @@ data class UserModel(
     val username: String,
     val email: String,
     val token: String,
-    val roleId: Int
 )
 
 data class LoginRequest(
@@ -61,5 +60,4 @@ data class UserData(
     val email: String,
     val password: String,
     val token: String?,
-    val roleId: Int
 )

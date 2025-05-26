@@ -8,7 +8,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.alp_se.Service.AuthenticationAPIService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -70,8 +69,4 @@ object AppContainer {
             .build()
     }
 
-    // API Services
-    val authService: AuthenticationAPIService by lazy {
-        retrofit.create(AuthenticationAPIService::class.java)
-    }
 }
