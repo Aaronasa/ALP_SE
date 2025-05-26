@@ -1,7 +1,582 @@
 package com.example.alp_se.View
 
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Title
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
+import java.util.*
+
+data class CreateItineraryRequest(
+    val title: String,
+    val start_date: String,
+    val end_date: String,
+    val estimate_start: String,
+    val estimate_end: String,
+    val total_person: Int,
+    val country: String,
+    val location: String,
+    val userId: Int
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CreateItineraryForm(
+    onSubmit: (CreateItineraryRequest) -> Unit,
+    onBack: () -> Unit = {}
+) {
+    var title by remember { mutableStateOf("") }
+    var startDate by remember { mutableStateOf("") }
+    var endDate by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
+    var totalPerson by remember { mutableStateOf("") }
+    var country by remember { mutableStateOf("") }
+    var estimateStart by remember { mutableStateOf("") }
+    var estimateEnd by remember { mutableStateOf("") }
+
+    // Date picker states
+    var showStartDatePicker by remember { mutableStateOf(false) }
+    var showEndDatePicker by remember { mutableStateOf(false) }
+    var showStartTimePicker by remember { mutableStateOf(false) }
+    var showEndTimePicker by remember { mutableStateOf(false) }
+
+    // Date picker state objects
+    val startDatePickerState = rememberDatePickerState()
+    val endDatePickerState = rememberDatePickerState()
+    val startTimePickerState = rememberTimePickerState()
+    val endTimePickerState = rememberTimePickerState()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF667eea),
+                        Color(0xFFF5F5F5)
+                    )
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Header Section
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 40.dp, bottom = 20.dp, start = 24.dp, end = 24.dp)
+            ) {
+                // Back Button
+                IconButton(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(
+                            color = Color.White.copy(alpha = 0.2f),
+                            shape = CircleShape
+                        )
+                        .align(Alignment.CenterStart)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Icon with background
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .background(
+                                color = Color.White.copy(alpha = 0.2f),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Create,
+                            contentDescription = "Create",
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Title
+                    Text(
+                        text = "Create Itinerary",
+                        color = Color.White,
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Subtitle
+                    Text(
+                        text = "Plan your next adventure",
+                        color = Color.White.copy(alpha = 0.8f),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
+            // Form Section
+            Card(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        color = Color(0xFFF5F5F5),
+                        shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
+                    ),
+                shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp)
+                        .verticalScroll(rememberScrollState()),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Progress indicator
+                    LinearProgressIndicator(
+                        progress = { 0.0f },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        color = Color(0xFF667eea),
+                        trackColor = Color(0xFF667eea).copy(alpha = 0.2f)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Basic Information Section
+                    SectionHeader(title = "Basic Information")
+
+                    ModernTextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        label = "Trip Title",
+                        icon = Icons.Filled.Title,
+                        placeholder = "e.g., Bali Adventure 2025"
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        DatePickerTextField(
+                            value = startDate,
+                            label = "Start Date",
+                            placeholder = "Select start date",
+                            modifier = Modifier.weight(1f),
+                            onClick = { showStartDatePicker = true }
+                        )
+
+                        DatePickerTextField(
+                            value = endDate,
+                            label = "End Date",
+                            placeholder = "Select end date",
+                            modifier = Modifier.weight(1f),
+                            onClick = { showEndDatePicker = true }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Location Information Section
+                    SectionHeader(title = "Location Details")
+
+                    ModernTextField(
+                        value = country,
+                        onValueChange = { country = it },
+                        label = "Country",
+                        icon = Icons.Filled.Public,
+                        placeholder = "e.g., Indonesia"
+                    )
+
+                    ModernTextField(
+                        value = location,
+                        onValueChange = { location = it },
+                        label = "Specific Location",
+                        icon = Icons.Filled.LocationOn,
+                        placeholder = "e.g., Denpasar, Bali"
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Trip Details Section
+                    SectionHeader(title = "Trip Details")
+
+                    ModernTextField(
+                        value = totalPerson,
+                        onValueChange = { totalPerson = it },
+                        label = "Number of People",
+                        icon = Icons.Filled.Group,
+                        placeholder = "e.g., 4",
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        TimePickerTextField(
+                            value = estimateStart,
+                            label = "Start Time",
+                            placeholder = "Select time",
+                            modifier = Modifier.weight(1f),
+                            onClick = { showStartTimePicker = true }
+                        )
+
+                        TimePickerTextField(
+                            value = estimateEnd,
+                            label = "End Time",
+                            placeholder = "Select time",
+                            modifier = Modifier.weight(1f),
+                            onClick = { showEndTimePicker = true }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // Submit Button
+                    Button(
+                        onClick = {
+                            val request = CreateItineraryRequest(
+                                title = title,
+                                start_date = startDate,
+                                end_date = endDate,
+                                estimate_start = estimateStart,
+                                estimate_end = estimateEnd,
+                                total_person = totalPerson.toIntOrNull() ?: 0,
+                                country = country,
+                                location = location,
+                                userId = 1 // TODO: Get actual user ID
+                            )
+                            onSubmit(request)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF667eea)
+                        )
+                    ) {
+                        Text(
+                            text = "Create Itinerary",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+            }
+        }
+
+        // Date Pickers
+        if (showStartDatePicker) {
+            DatePickerDialog(
+                onDateSelected = { dateInMillis ->
+                    dateInMillis?.let {
+                        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        startDate = formatter.format(Date(it))
+                    }
+                    showStartDatePicker = false
+                },
+                onDismiss = { showStartDatePicker = false },
+                datePickerState = startDatePickerState
+            )
+        }
+
+        if (showEndDatePicker) {
+            DatePickerDialog(
+                onDateSelected = { dateInMillis ->
+                    dateInMillis?.let {
+                        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        endDate = formatter.format(Date(it))
+                    }
+                    showEndDatePicker = false
+                },
+                onDismiss = { showEndDatePicker = false },
+                datePickerState = endDatePickerState
+            )
+        }
+
+        // Time Pickers
+        if (showStartTimePicker) {
+            TimePickerDialog(
+                onTimeSelected = { hour, minute ->
+                    estimateStart = String.format("%02d:%02d", hour, minute)
+                    showStartTimePicker = false
+                },
+                onDismiss = { showStartTimePicker = false },
+                timePickerState = startTimePickerState
+            )
+        }
+
+        if (showEndTimePicker) {
+            TimePickerDialog(
+                onTimeSelected = { hour, minute ->
+                    estimateEnd = String.format("%02d:%02d", hour, minute)
+                    showEndTimePicker = false
+                },
+                onDismiss = { showEndTimePicker = false },
+                timePickerState = endTimePickerState
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DatePickerDialog(
+    onDateSelected: (Long?) -> Unit,
+    onDismiss: () -> Unit,
+    datePickerState: DatePickerState
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = { onDateSelected(datePickerState.selectedDateMillis) }) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+        text = {
+            DatePicker(
+                state = datePickerState,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePickerDialog(
+    onTimeSelected: (Int, Int) -> Unit,
+    onDismiss: () -> Unit,
+    timePickerState: TimePickerState
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onTimeSelected(timePickerState.hour, timePickerState.minute)
+                }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+        text = {
+            TimePicker(
+                state = timePickerState,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DatePickerTextField(
+    value: String,
+    label: String,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = { },
+        label = { Text(label) },
+        placeholder = { Text(placeholder, color = Color.Gray) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Filled.CalendarToday,
+                contentDescription = label,
+                tint = Color(0xFF667eea)
+            )
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color(0xFF667eea),
+            focusedLabelColor = Color(0xFF667eea),
+            cursorColor = Color(0xFF667eea)
+        ),
+        readOnly = true,
+        enabled = false
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimePickerTextField(
+    value: String,
+    label: String,
+    placeholder: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = { },
+        label = { Text(label) },
+        placeholder = { Text(placeholder, color = Color.Gray) },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Filled.Schedule,
+                contentDescription = label,
+                tint = Color(0xFF667eea)
+            )
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color(0xFF667eea),
+            focusedLabelColor = Color(0xFF667eea),
+            cursorColor = Color(0xFF667eea)
+        ),
+        readOnly = true,
+        enabled = false
+    )
+}
 
 @Composable
-fun CreateItineraryView() {
+private fun SectionHeader(title: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .width(4.dp)
+                .height(24.dp)
+                .background(
+                    color = Color(0xFF667eea),
+                    shape = RoundedCornerShape(2.dp)
+                )
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF333333)
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModernTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    icon: ImageVector,
+    placeholder: String = "",
+    modifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        placeholder = { Text(placeholder, color = Color.Gray) },
+        leadingIcon = {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = Color(0xFF667eea)
+            )
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = Color(0xFF667eea),
+            focusedLabelColor = Color(0xFF667eea),
+            cursorColor = Color(0xFF667eea)
+        ),
+        keyboardOptions = keyboardOptions
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CreateItineraryFormPreview() {
+    MaterialTheme {
+        CreateItineraryForm(
+            onSubmit = { request ->
+                println("Preview Submit: ${request.title}")
+            },
+            onBack = {
+                println("Back pressed")
+            }
+        )
+    }
 }
