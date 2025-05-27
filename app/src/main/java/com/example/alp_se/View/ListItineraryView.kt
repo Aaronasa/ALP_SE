@@ -43,12 +43,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.alp_se.Model.ItineraryModel
+import com.example.alp_se.Route.listScreen
 import com.example.alp_se.ViewModel.ItineraryViewModel
 
 @Composable
 fun ListItineraryView(
-    itineraryViewModel: ItineraryViewModel = viewModel()
+    itineraryViewModel: ItineraryViewModel = viewModel(),
+    navController: NavController? = null
 ) {
     // Sample data untuk preview
     val itineraries by itineraryViewModel.itineraryModel.collectAsState()
@@ -176,7 +179,7 @@ fun ListItineraryView(
         // Floating Action Button
         FloatingActionButton(
             onClick = {
-                // TODO: Navigate to create itinerary screen
+                navController?.navigate(listScreen.CreateItineraryView.name)
             },
             shape = CircleShape,
             modifier = Modifier

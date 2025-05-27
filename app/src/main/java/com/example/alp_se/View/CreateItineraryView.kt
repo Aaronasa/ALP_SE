@@ -31,35 +31,30 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.alp_se.Model.CreateItineraryRequest
+import com.example.alp_se.Route.listScreen
+import com.example.alp_se.ViewModel.ItineraryViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
-data class CreateItineraryRequest(
-    val title: String,
-    val start_date: String,
-    val end_date: String,
-    val estimate_start: String,
-    val estimate_end: String,
-    val total_person: Int,
-    val country: String,
-    val location: String,
-    val userId: Int
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateItineraryForm(
-    onSubmit: (CreateItineraryRequest) -> Unit,
-    onBack: () -> Unit = {}
+fun CreateItineraryView(
+    onBack: () -> Unit = {},
+    navController: NavController? = null,
+    itineraryViewModel: ItineraryViewModel = viewModel()
 ) {
-    var title by remember { mutableStateOf("") }
-    var startDate by remember { mutableStateOf("") }
-    var endDate by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var totalPerson by remember { mutableStateOf("") }
-    var country by remember { mutableStateOf("") }
-    var estimateStart by remember { mutableStateOf("") }
-    var estimateEnd by remember { mutableStateOf("") }
+    // Use ViewModel state directly instead of local state
+    val title = itineraryViewModel.title
+    val startDate = itineraryViewModel.start_date
+    val endDate = itineraryViewModel.end_date
+    val location = itineraryViewModel.location
+    val totalPerson = itineraryViewModel.total_person
+    val country = itineraryViewModel.country
+    val estimateStart = itineraryViewModel.estimate_start
+    val estimateEnd = itineraryViewModel.estimate_end
 
     // Date picker states
     var showStartDatePicker by remember { mutableStateOf(false) }
@@ -72,6 +67,28 @@ fun CreateItineraryForm(
     val endDatePickerState = rememberDatePickerState()
     val startTimePickerState = rememberTimePickerState()
     val endTimePickerState = rememberTimePickerState()
+
+    // Listen to status messages
+    val statusMessage by itineraryViewModel.statusMessage.collectAsState()
+
+    // Show status messages
+    LaunchedEffect(statusMessage) {
+        statusMessage?.let { message ->
+            // You can show a Toast or Snackbar here if needed
+            println("Status: $message") // For debugging
+        }
+    }
+
+    // Helper function to combine date and time into ISO string
+    fun combineDateTime(dateStr: String, timeStr: String): String {
+        return if (dateStr.isNotBlank() && timeStr.isNotBlank()) {
+            "${dateStr}T${timeStr}:00.000Z"
+        } else if (dateStr.isNotBlank()) {
+            "${dateStr}T00:00:00.000Z"
+        } else {
+            ""
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -196,7 +213,7 @@ fun CreateItineraryForm(
 
                     ModernTextField(
                         value = title,
-                        onValueChange = { title = it },
+                        onValueChange = { itineraryViewModel.updateTitle(it) },
                         label = "Trip Title",
                         icon = Icons.Filled.Title,
                         placeholder = "e.g., Bali Adventure 2025"
@@ -230,7 +247,7 @@ fun CreateItineraryForm(
 
                     ModernTextField(
                         value = country,
-                        onValueChange = { country = it },
+                        onValueChange = { itineraryViewModel.updateCountry(it) },
                         label = "Country",
                         icon = Icons.Filled.Public,
                         placeholder = "e.g., Indonesia"
@@ -238,7 +255,7 @@ fun CreateItineraryForm(
 
                     ModernTextField(
                         value = location,
-                        onValueChange = { location = it },
+                        onValueChange = { itineraryViewModel.updateLocation(it) },
                         label = "Specific Location",
                         icon = Icons.Filled.LocationOn,
                         placeholder = "e.g., Denpasar, Bali"
@@ -251,7 +268,7 @@ fun CreateItineraryForm(
 
                     ModernTextField(
                         value = totalPerson,
-                        onValueChange = { totalPerson = it },
+                        onValueChange = { itineraryViewModel.updateTotalPerson(it) },
                         label = "Number of People",
                         icon = Icons.Filled.Group,
                         placeholder = "e.g., 4",
@@ -284,18 +301,38 @@ fun CreateItineraryForm(
                     // Submit Button
                     Button(
                         onClick = {
+                            println("Button clicked!") // Debug log
+                            println("Title: $title")
+                            println("Start Date: $startDate")
+                            println("End Date: $endDate")
+                            println("Location: $location")
+                            println("Country: $country")
+                            println("Total Person: $totalPerson")
+                            println("Estimate Start: $estimateStart")
+                            println("Estimate End: $estimateEnd")
+
+                            // Create proper datetime strings for estimate_start and estimate_end
+                            val estimateStartDateTime = combineDateTime(startDate, estimateStart)
+                            val estimateEndDateTime = combineDateTime(endDate, estimateEnd)
+
+                            println("Estimate Start DateTime: $estimateStartDateTime")
+                            println("Estimate End DateTime: $estimateEndDateTime")
+
                             val request = CreateItineraryRequest(
                                 title = title,
                                 start_date = startDate,
                                 end_date = endDate,
-                                estimate_start = estimateStart,
-                                estimate_end = estimateEnd,
+                                estimate_start = estimateStartDateTime, // Use combined datetime
+                                estimate_end = estimateEndDateTime,     // Use combined datetime
                                 total_person = totalPerson.toIntOrNull() ?: 0,
                                 country = country,
                                 location = location,
                                 userId = 1 // TODO: Get actual user ID
                             )
-                            onSubmit(request)
+
+                            println("Request: $request") // Debug log
+                            itineraryViewModel.createItinerary(request)
+                            navController?.navigate(listScreen.ListItineraryView.name)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -303,7 +340,8 @@ fun CreateItineraryForm(
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF667eea)
-                        )
+                        ),
+                        enabled = title.isNotBlank() && startDate.isNotBlank() && endDate.isNotBlank()
                     ) {
                         Text(
                             text = "Create Itinerary",
@@ -323,7 +361,9 @@ fun CreateItineraryForm(
                 onDateSelected = { dateInMillis ->
                     dateInMillis?.let {
                         val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                        startDate = formatter.format(Date(it))
+                        val formattedDate = formatter.format(Date(it))
+                        itineraryViewModel.updateStartDate(formattedDate)
+                        println("Start date selected: $formattedDate") // Debug log
                     }
                     showStartDatePicker = false
                 },
@@ -337,7 +377,9 @@ fun CreateItineraryForm(
                 onDateSelected = { dateInMillis ->
                     dateInMillis?.let {
                         val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                        endDate = formatter.format(Date(it))
+                        val formattedDate = formatter.format(Date(it))
+                        itineraryViewModel.updateEndDate(formattedDate)
+                        println("End date selected: $formattedDate") // Debug log
                     }
                     showEndDatePicker = false
                 },
@@ -350,7 +392,9 @@ fun CreateItineraryForm(
         if (showStartTimePicker) {
             TimePickerDialog(
                 onTimeSelected = { hour, minute ->
-                    estimateStart = String.format("%02d:%02d", hour, minute)
+                    val formattedTime = String.format("%02d:%02d", hour, minute)
+                    itineraryViewModel.updateEstimateStart(formattedTime)
+                    println("Start time selected: $formattedTime") // Debug log
                     showStartTimePicker = false
                 },
                 onDismiss = { showStartTimePicker = false },
@@ -361,7 +405,9 @@ fun CreateItineraryForm(
         if (showEndTimePicker) {
             TimePickerDialog(
                 onTimeSelected = { hour, minute ->
-                    estimateEnd = String.format("%02d:%02d", hour, minute)
+                    val formattedTime = String.format("%02d:%02d", hour, minute)
+                    itineraryViewModel.updateEstimateEnd(formattedTime)
+                    println("End time selected: $formattedTime") // Debug log
                     showEndTimePicker = false
                 },
                 onDismiss = { showEndTimePicker = false },
@@ -460,7 +506,10 @@ private fun DatePickerTextField(
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color(0xFF667eea),
             focusedLabelColor = Color(0xFF667eea),
-            cursorColor = Color(0xFF667eea)
+            cursorColor = Color(0xFF667eea),
+            disabledBorderColor = Color(0xFF667eea).copy(alpha = 0.5f),
+            disabledLabelColor = Color(0xFF667eea).copy(alpha = 0.7f),
+            disabledTextColor = Color.Black
         ),
         readOnly = true,
         enabled = false
@@ -496,7 +545,10 @@ private fun TimePickerTextField(
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = Color(0xFF667eea),
             focusedLabelColor = Color(0xFF667eea),
-            cursorColor = Color(0xFF667eea)
+            cursorColor = Color(0xFF667eea),
+            disabledBorderColor = Color(0xFF667eea).copy(alpha = 0.5f),
+            disabledLabelColor = Color(0xFF667eea).copy(alpha = 0.7f),
+            disabledTextColor = Color.Black
         ),
         readOnly = true,
         enabled = false
@@ -564,19 +616,4 @@ private fun ModernTextField(
         ),
         keyboardOptions = keyboardOptions
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CreateItineraryFormPreview() {
-    MaterialTheme {
-        CreateItineraryForm(
-            onSubmit = { request ->
-                println("Preview Submit: ${request.title}")
-            },
-            onBack = {
-                println("Back pressed")
-            }
-        )
-    }
 }
