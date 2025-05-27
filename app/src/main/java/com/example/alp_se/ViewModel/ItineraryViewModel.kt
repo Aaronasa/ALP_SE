@@ -40,16 +40,13 @@ class ItineraryViewModel(
     var location by mutableStateOf("")
         private set
 
-    private val _itineraryModel = MutableStateFlow<MutableList<ItineraryModel>>(mutableListOf())
+    private val _itineraryModel = MutableStateFlow<List<ItineraryModel>>(emptyList())
+    val itineraryModel: StateFlow<List<ItineraryModel>> = _itineraryModel
+
 
     private val _statusMessage = MutableStateFlow<String?>(null)
     val statusMessage: StateFlow<String?> = _statusMessage.asStateFlow()
 
-
-    val itineraryModel: StateFlow<List<ItineraryModel>>
-        get() {
-            return _itineraryModel.asStateFlow()
-        }
 
     fun updateTitle(newTitle: String) {
         title = newTitle

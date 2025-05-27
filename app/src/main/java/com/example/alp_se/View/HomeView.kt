@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.alp_se.Route.listScreen
 import kotlinx.coroutines.delay
 
 @Composable
@@ -38,12 +39,12 @@ fun HomeView(
             .background(Color.White),
         contentAlignment = Alignment.Center
     ) {
-        HeroSection(isVisible = true)
+        HeroSection(isVisible = true, navController = navController)
     }
 }
 
 @Composable
-fun HeroSection(isVisible: Boolean) {
+fun HeroSection(isVisible: Boolean, navController: NavController?=null) {
     val infiniteTransition = rememberInfiniteTransition(label = "hero_animation")
     val offsetY by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -114,7 +115,9 @@ fun HeroSection(isVisible: Boolean) {
 
             // CTA Button
             Button(
-                onClick = { /* Route to other page */ },
+                onClick = {
+                    navController?.navigate(listScreen.ListItineraryView.name)
+                },
                 modifier = Modifier
                     .height(56.dp)
                     .shadow(8.dp, RoundedCornerShape(28.dp)),

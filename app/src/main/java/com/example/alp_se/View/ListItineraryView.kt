@@ -29,6 +29,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,41 +42,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.alp_se.Model.ItineraryModel
+import com.example.alp_se.ViewModel.ItineraryViewModel
 
 @Composable
-fun ListItineraryView() {
+fun ListItineraryView(
+    itineraryViewModel: ItineraryViewModel = viewModel()
+) {
     // Sample data untuk preview
-    val sampleItineraries = listOf(
-        ItineraryModel(
-            title = "Liburan Bali",
-            start_date = "20 Dec",
-            end_date = "22 Dec",
-            location = "Denpasar, Bali",
-            total_person = 5
-        ),
-        ItineraryModel(
-            title = "Jakarta Business Trip",
-            start_date = "15 Jan",
-            end_date = "18 Jan",
-            location = "Jakarta, Indonesia",
-            total_person = 3
-        ),
-        ItineraryModel(
-            title = "Yogyakarta Cultural Tour",
-            start_date = "05 Feb",
-            end_date = "07 Feb",
-            location = "Yogyakarta, Indonesia",
-            total_person = 8
-        ),
-        ItineraryModel(
-            title = "Bandung Adventure",
-            start_date = "12 Mar",
-            end_date = "14 Mar",
-            location = "Bandung, Jawa Barat",
-            total_person = 4
-        )
-    )
+    val itineraries by itineraryViewModel.itineraryModel.collectAsState()
+
+    LaunchedEffect (Unit) {
+        itineraryViewModel.getAllItineraries()
+    }
 
     Box(
         modifier = Modifier
@@ -148,15 +130,15 @@ fun ListItineraryView() {
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         StatItem(
-                            count = sampleItineraries.size.toString(),
+                            count = itineraries.size.toString(),
                             label = "Trips"
                         )
                         StatItem(
-                            count = sampleItineraries.sumOf { it.total_person }.toString(),
+                            count = itineraries.sumOf { it.total_person }.toString(),
                             label = "Total People"
                         )
                         StatItem(
-                            count = "4",
+                            count = itineraries.map { it.country }.toSet().size.toString(),
                             label = "Countries"
                         )
                     }
@@ -174,7 +156,7 @@ fun ListItineraryView() {
                     .padding(top = 20.dp, bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(sampleItineraries) { itinerary ->
+                items(itineraries) { itinerary ->
                     ItineraryCard(
                         title = itinerary.title,
                         startDate = itinerary.start_date,
@@ -239,6 +221,8 @@ private fun StatItem(
 @Composable
 fun ListItineraryViewPreview() {
     MaterialTheme {
-        ListItineraryView()
+        ListItineraryView(
+
+        )
     }
 }
