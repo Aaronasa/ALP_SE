@@ -113,7 +113,9 @@ fun CreateItineraryView(
             ) {
                 // Back Button
                 IconButton(
-                    onClick = onBack,
+                    onClick = {
+                        navController?.navigate(listScreen.ListItineraryView.name)
+                    },
                     modifier = Modifier
                         .size(40.dp)
                         .background(

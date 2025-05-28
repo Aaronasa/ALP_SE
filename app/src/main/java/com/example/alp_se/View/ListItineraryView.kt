@@ -48,6 +48,14 @@ import com.example.alp_se.Model.ItineraryModel
 import com.example.alp_se.Route.listScreen
 import com.example.alp_se.ViewModel.ItineraryViewModel
 
+fun formatDateString(dateString: String): String {
+    return try {
+        dateString.substringBefore('T')
+    } catch (e: Exception) {
+        dateString // Return original string if parsing fails
+    }
+}
+
 @Composable
 fun ListItineraryView(
     itineraryViewModel: ItineraryViewModel = viewModel(),
@@ -161,11 +169,15 @@ fun ListItineraryView(
             ) {
                 items(itineraries) { itinerary ->
                     ItineraryCard(
+                        itinerary = itinerary,
                         title = itinerary.title,
-                        startDate = itinerary.start_date,
-                        endDate = itinerary.end_date,
+                        startDate = formatDateString(itinerary.start_date),
+                        endDate = formatDateString(itinerary.end_date),
                         location = itinerary.location,
-                        participantCount = itinerary.total_person
+                        participantCount = itinerary.total_person,
+                        onDelete = { itineraryId ->
+                            itineraryViewModel.deleteItinerary(itineraryId)
+                        }
                     )
                 }
 
@@ -224,8 +236,6 @@ private fun StatItem(
 @Composable
 fun ListItineraryViewPreview() {
     MaterialTheme {
-        ListItineraryView(
-
-        )
+        ListItineraryView()
     }
 }

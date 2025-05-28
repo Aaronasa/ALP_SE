@@ -23,6 +23,8 @@ class ItineraryViewModel(
     private val itineraryRepository: ItineraryRepository
 ) : ViewModel() {
 
+    var id by mutableStateOf(0)
+        private set
     var title by mutableStateOf("")
         private set
     var start_date by mutableStateOf("")
@@ -132,6 +134,7 @@ class ItineraryViewModel(
                 val response = itineraryRepository.deleteItinerary(id)
                 if (response.isSuccessful) {
                     _statusMessage.value = "Itinerary deleted successfully."
+                    getAllItineraries()
                 } else {
                     _statusMessage.value = "Failed to delete itinerary: ${response.message()}"
                 }

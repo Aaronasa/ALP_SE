@@ -21,14 +21,14 @@ interface ItineraryService {
         @Body createItineraryRequest: CreateItineraryRequest
     ): Response<GeneralResponseModel> // return string message saja
 
-    @PUT("/itinerary/{id}")
+    @PUT("/itineraries/{id}")
     suspend fun updateItinerary(
         @Path("id") id: Int,
         @Body updateItineraryRequest: UpdateItineraryRequest
     ): Response<GeneralResponseModel> // return string message saja
 
-    suspend @DELETE("/itinerary/{id}")
-    fun deleteItinerary(
+    @DELETE("/itineraries/{id}")
+    suspend fun deleteItinerary(
         @Path("id") id: Int
     ): Response<GeneralResponseModel>// return string message saja
 
