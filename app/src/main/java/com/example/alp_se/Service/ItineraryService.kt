@@ -17,18 +17,18 @@ interface ItineraryService {
     suspend fun getAllItineraries(): Response<GetAllItineraryResponse>
 
     @POST("/itineraries")
-    fun createItinerary(
+    suspend fun createItinerary(
         @Body createItineraryRequest: CreateItineraryRequest
     ): Response<GeneralResponseModel> // return string message saja
 
-    @PUT("/itinerary/{id}")
-    fun updateItinerary(
+    @PUT("/itineraries/{id}")
+    suspend fun updateItinerary(
         @Path("id") id: Int,
         @Body updateItineraryRequest: UpdateItineraryRequest
     ): Response<GeneralResponseModel> // return string message saja
 
-    @DELETE("/itinerary/{id}")
-    fun deleteItinerary(
+    @DELETE("/itineraries/{id}")
+    suspend fun deleteItinerary(
         @Path("id") id: Int
     ): Response<GeneralResponseModel>// return string message saja
 
