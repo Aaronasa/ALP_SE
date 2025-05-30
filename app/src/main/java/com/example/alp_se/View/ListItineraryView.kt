@@ -58,7 +58,7 @@ fun formatDateString(dateString: String): String {
 
 @Composable
 fun ListItineraryView(
-    itineraryViewModel: ItineraryViewModel = viewModel(),
+    itineraryViewModel: ItineraryViewModel = viewModel(factory = ItineraryViewModel.Factory),
     navController: NavController? = null
 ) {
     // Sample data untuk preview

@@ -619,3 +619,14 @@ private fun ModernTextField(
         keyboardOptions = keyboardOptions
     )
 }
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun CreateItineraryViewPreview() {
+    // Preview without NavController and using default ViewModel
+    CreateItineraryView(
+        onBack = {},            // No-op for back
+        navController = null    // No navigation in preview
+    )
+}
+

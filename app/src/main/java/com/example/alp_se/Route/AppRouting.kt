@@ -35,7 +35,7 @@ fun AppRouting() {
         ) {
             composable(route = listScreen.HomeView.name) {
                 HomeView(onSplashFinish = {
-                    NavController.navigate(listScreen.HomeView.name) {
+                    NavController.navigate(listScreen.ListItineraryView.name) {
                         popUpTo(listScreen.HomeView.name) { inclusive = true }
                     }
                 })
