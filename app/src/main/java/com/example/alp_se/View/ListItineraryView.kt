@@ -58,7 +58,7 @@ fun formatDateString(dateString: String): String {
 
 @Composable
 fun ListItineraryView(
-    itineraryViewModel: ItineraryViewModel = viewModel(),
+    itineraryViewModel: ItineraryViewModel = viewModel(factory = ItineraryViewModel.Factory),
     navController: NavController? = null
 ) {
     // Sample data untuk preview
@@ -168,6 +168,9 @@ fun ListItineraryView(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(itineraries) { itinerary ->
+
+                    println("Card: ${itinerary.title}, ID: ${itinerary.id}")
+
                     ItineraryCard(
                         itinerary = itinerary,
                         title = itinerary.title,
@@ -177,6 +180,11 @@ fun ListItineraryView(
                         participantCount = itinerary.total_person,
                         onDelete = { itineraryId ->
                             itineraryViewModel.deleteItinerary(itineraryId)
+                        },
+                        onClick = {
+                            println("Navigating to day view for ID: ${itinerary.id}")
+                            navController?.currentBackStackEntry?.savedStateHandle?.set("itineraryId", itinerary.id)
+                            navController?.navigate(listScreen.ListItineraryDayView.name)
                         }
                     )
                 }

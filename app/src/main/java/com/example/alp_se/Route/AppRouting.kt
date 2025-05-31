@@ -45,49 +45,22 @@ fun AppRouting(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(route = listScreen.HomeView.name) {
-                HomeView(
-                    onSplashFinish = {
-                        NavController.navigate(listScreen.HomeView.name) {
-                            popUpTo(listScreen.HomeView.name) { inclusive = true }
-                        }
-                    },
-                    navController = NavController
-                )
+                HomeView(onSplashFinish = {
+                    NavController.navigate(listScreen.ListItineraryView.name) {
+                        popUpTo(listScreen.HomeView.name) { inclusive = true }
+                    }
+                })
             }
 
-            composable(
-                route = listScreen.ListItineraryView.name,
-            ) {
-                ListItineraryView(
-                    navController = NavController,
-                    itineraryViewModel = itineraryViewModel
-                )
+            composable(route = listScreen.ListItineraryView.name) {
+                ListItineraryView(navController = NavController)
             }
 
-            composable(
-                route = listScreen.CreateItineraryView.name,
-            ) {
-                CreateItineraryView(
-                    navController = NavController,
-                    itineraryViewModel = itineraryViewModel
-                )
+            composable(route = listScreen.ListItineraryDayView.name) {
+                ListItineraryDayView(navController = NavController)
             }
 
-//            composable(
-//                route = listScreen.ListItineraryDayView.name + "/{itinerary_id}",
-//                arguments = listOf(
-//                    navArgument("itinerary_id") { type = NavType.IntType }
-//                )
-//            ) { backStackEntry ->
-//                val itinerary_id = backStackEntry.arguments?.getInt("itinerary_id")
-//                requireNotNull(itinerary_id) { "itinerary_id is required to navigate to ListItineraryDayView" }
-//
-//                ListItineraryDayView(
-//                    navController = NavController,
-//                    // itineraryDayViewModel, // You'll need to add this parameter if required
-//                    itinerary_id
-//                )
-//            }
+
         }
     }
 }
