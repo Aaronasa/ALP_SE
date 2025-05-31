@@ -1,14 +1,9 @@
 package com.example.alp_se.View
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,55 +11,59 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.alp_se.Model.CreateItineraryDayRequest
 import com.example.alp_se.Model.ItineraryDayModel
 import com.example.alp_se.Route.listScreen
+import com.example.alp_se.ViewModel.ItineraryDayViewModel
 import java.text.SimpleDateFormat
 import java.util.*
+import android.util.Log
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ItineraryDayView(
-    onBack: () -> Unit = {},
+fun CreateItineraryDayView(
     navController: NavController? = null,
-    itineraryId: Int = 0, // Pass the itinerary ID
-    // itineraryDayViewModel: ItineraryDayViewModel = viewModel() // You'll need to create this ViewModel
+    viewModel: ItineraryDayViewModel = viewModel(factory = ItineraryDayViewModel.Factory)
 ) {
-    // State for day activities
-    var dayActivities by remember {
-        mutableStateOf(
-            listOf(
-                ItineraryDayModel(day = "Day 1"),
-                ItineraryDayModel(day = "Day 2"),
-                ItineraryDayModel(day = "Day 3")
-            )
-        )
+    var itineraryId by remember { mutableStateOf(0) }
+    var startDate by remember { mutableStateOf<String?>(null) }
+    var endDate by remember { mutableStateOf<String?>(null) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        navController?.previousBackStackEntry?.savedStateHandle?.let { handle ->
+            itineraryId = handle.get<Int>("itineraryId") ?: 0
+            startDate = handle.get<String>("startDate")
+            endDate = handle.get<String>("endDate")
+            println("✅ itineraryId loaded: $itineraryId")
+        }
     }
 
-    // Current editing activity
-    var editingIndex by remember { mutableStateOf(-1) }
-    var showAddDialog by remember { mutableStateOf(false) }
+    if (itineraryId <= 0) {
+        Text(
+            text = "Loading itinerary data...",
+            color = Color.White,
+            fontSize = 18.sp,
+            modifier = Modifier.padding(24.dp)
+        )
+        return
+    }
 
-    // Time picker states for editing
-    var showStartTimePicker by remember { mutableStateOf(false) }
-    var showEndTimePicker by remember { mutableStateOf(false) }
-    var showMeetingTimePicker by remember { mutableStateOf(false) }
+    var activity by remember { mutableStateOf(ItineraryDayModel()) }
 
-    // Time picker state objects
-    val startTimePickerState = rememberTimePickerState()
-    val endTimePickerState = rememberTimePickerState()
-    val meetingTimePickerState = rememberTimePickerState()
+    val formatter = remember { SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()) }
+    val startDateObj = remember(startDate) { startDate?.let { formatter.parse(it) } }
+    val endDateObj = remember(endDate) { endDate?.let { formatter.parse(it) } }
 
     Box(
         modifier = Modifier
@@ -79,683 +78,181 @@ fun ItineraryDayView(
             )
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            // Header Section
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 40.dp, bottom = 20.dp, start = 24.dp, end = 24.dp)
-            ) {
-                // Back Button
-                IconButton(
-                    onClick = {
-                        navController?.navigate(listScreen.ListItineraryView.name)
-                    },
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(
-                            color = Color.White.copy(alpha = 0.2f),
-                            shape = CircleShape
-                        )
-                        .align(Alignment.CenterStart)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    // Icon with background
-                    Box(
-                        modifier = Modifier
-                            .size(60.dp)
-                            .background(
-                                color = Color.White.copy(alpha = 0.2f),
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Schedule,
-                            contentDescription = "Daily Schedule",
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Title
-                    Text(
-                        text = "Daily Activities",
-                        color = Color.White,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // Subtitle
-                    Text(
-                        text = "Manage your daily schedule",
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-
-            // Content Section
-            Card(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        color = Color(0xFFF5F5F5),
-                        shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp)
-                    ),
-                shape = RoundedCornerShape(topStart = 30.dp, topEnd = 30.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp)
-                ) {
-                    // Progress indicator
-                    LinearProgressIndicator(
-                        progress = { 1.0f },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        color = Color(0xFF667eea),
-                        trackColor = Color(0xFF667eea).copy(alpha = 0.2f)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Section Header with Add Button
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        SectionHeader(title = "Activities Schedule")
-
-                        // Add Activity Button
-                        IconButton(
-                            onClick = { showAddDialog = true },
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(
-                                    color = Color(0xFF667eea),
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = "Add Activity",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Activities List
-                    if (dayActivities.isEmpty()) {
-                        // Empty State
-                        EmptyStateCard(
-                            onAddActivity = { showAddDialog = true }
-                        )
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            itemsIndexed(dayActivities) { index, activity ->
-                                ActivityCard(
-                                    activity = activity,
-                                    onEdit = { editingIndex = index },
-                                    onDelete = {
-                                        dayActivities = dayActivities.toMutableList().apply {
-                                            removeAt(index)
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Save All Button
-                    Button(
-                        onClick = {
-                            // Save all activities
-                            // itineraryDayViewModel.saveAllActivities(dayActivities)
-                            println("Saving all activities: $dayActivities")
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF667eea)
-                        ),
-                        enabled = dayActivities.isNotEmpty()
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Save,
-                                contentDescription = "Save",
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Save All Activities",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        // Add/Edit Activity Dialog
-        if (showAddDialog || editingIndex >= 0) {
-            AddEditActivityDialog(
-                activity = if (editingIndex >= 0) dayActivities[editingIndex] else ItineraryDayModel(),
-                isEditing = editingIndex >= 0,
-                onSave = { updatedActivity ->
-                    if (editingIndex >= 0) {
-                        // Update existing activity
-                        dayActivities = dayActivities.toMutableList().apply {
-                            this[editingIndex] = updatedActivity
-                        }
-                        editingIndex = -1
-                    } else {
-                        // Add new activity
-                        dayActivities = dayActivities + updatedActivity
-                        showAddDialog = false
-                    }
-                },
-                onDismiss = {
-                    showAddDialog = false
-                    editingIndex = -1
-                }
-            )
-        }
-
-        // Time Pickers
-        if (showStartTimePicker) {
-            TimePickerDialog(
-                onTimeSelected = { hour, minute ->
-                    val formattedTime = String.format("%02d:%02d", hour, minute)
-                    // Handle start time selection
-                    showStartTimePicker = false
-                },
-                onDismiss = { showStartTimePicker = false },
-                timePickerState = startTimePickerState
-            )
-        }
-
-        if (showEndTimePicker) {
-            TimePickerDialog(
-                onTimeSelected = { hour, minute ->
-                    val formattedTime = String.format("%02d:%02d", hour, minute)
-                    // Handle end time selection
-                    showEndTimePicker = false
-                },
-                onDismiss = { showEndTimePicker = false },
-                timePickerState = endTimePickerState
-            )
-        }
-
-        if (showMeetingTimePicker) {
-            TimePickerDialog(
-                onTimeSelected = { hour, minute ->
-                    val formattedTime = String.format("%02d:%02d", hour, minute)
-                    // Handle meeting time selection
-                    showMeetingTimePicker = false
-                },
-                onDismiss = { showMeetingTimePicker = false },
-                timePickerState = meetingTimePickerState
-            )
-        }
-    }
-}
-
-@Composable
-private fun ActivityCard(
-    activity: ItineraryDayModel,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FA)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Header with day and actions
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = activity.day,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF667eea)
-                )
-
-                Row {
-                    IconButton(
-                        onClick = onEdit,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                color = Color(0xFF667eea).copy(alpha = 0.1f),
-                                shape = CircleShape
-                            )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = "Edit",
-                            tint = Color(0xFF667eea),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                color = Color(0xFFFF4444).copy(alpha = 0.1f),
-                                shape = CircleShape
-                            )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Delete,
-                            contentDescription = "Delete",
-                            tint = Color(0xFFFF4444),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Time Information
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                TimeInfoChip(
-                    icon = Icons.Filled.Schedule,
-                    label = "Start",
-                    time = activity.start_time.ifBlank { "Not set" },
-                    modifier = Modifier.weight(1f)
-                )
-
-                TimeInfoChip(
-                    icon = Icons.Filled.Schedule,
-                    label = "End",
-                    time = activity.end_time.ifBlank { "Not set" },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            if (activity.meeting_time.isNotBlank()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                TimeInfoChip(
-                    icon = Icons.Filled.Group,
-                    label = "Meeting",
-                    time = activity.meeting_time,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            if (activity.activity_description.isNotBlank()) {
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Description",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(bottom = 4.dp)
-                )
-
-                Text(
-                    text = activity.activity_description,
-                    fontSize = 14.sp,
-                    color = Color(0xFF333333),
-                    lineHeight = 20.sp
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun TimeInfoChip(
-    icon: ImageVector,
-    label: String,
-    time: String,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        shape = RoundedCornerShape(8.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = Color(0xFF667eea),
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Column {
-                Text(
-                    text = label,
-                    fontSize = 10.sp,
-                    color = Color.Gray,
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = time,
-                    fontSize = 12.sp,
-                    color = Color(0xFF333333),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun EmptyStateCard(
-    onAddActivity: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FA)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(32.dp),
+                .fillMaxSize()
+                .padding(24.dp)
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                imageVector = Icons.Filled.Schedule,
-                contentDescription = "No Activities",
-                tint = Color.Gray,
-                modifier = Modifier.size(48.dp)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Text(
-                text = "No activities planned yet",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
+                text = "Create Activity",
+                color = Color.White,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(vertical = 24.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Start by adding your first daily activity",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Button(
-                onClick = onAddActivity,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF667eea)
-                ),
-                shape = RoundedCornerShape(12.dp)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add",
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Add First Activity")
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AddEditActivityDialog(
-    activity: ItineraryDayModel,
-    isEditing: Boolean,
-    onSave: (ItineraryDayModel) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var editableActivity by remember { mutableStateOf(activity) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            Button(
-                onClick = { onSave(editableActivity) },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF667eea)),
-                enabled = editableActivity.day.isNotBlank()
-            ) {
-                Text(if (isEditing) "Update" else "Add")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        },
-        title = {
-            Text(
-                text = if (isEditing) "Edit Activity" else "Add New Activity",
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Day field
-                ModernTextField(
-                    value = editableActivity.day,
-                    onValueChange = { editableActivity = editableActivity.copy(day = it) },
-                    label = "Day",
-                    icon = Icons.Filled.CalendarToday,
-                    placeholder = "e.g., Day 1, Monday"
-                )
-
-                // Time fields
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     ModernTextField(
-                        value = editableActivity.start_time,
-                        onValueChange = { editableActivity = editableActivity.copy(start_time = it) },
+                        value = activity.day,
+                        onValueChange = { activity = activity.copy(day = it) },
+                        label = "Day",
+                        icon = Icons.Filled.CalendarToday,
+                        placeholder = "DD-MM-YYYY"
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    ModernTextField(
+                        value = activity.start_time,
+                        onValueChange = { activity = activity.copy(start_time = it) },
                         label = "Start Time",
                         icon = Icons.Filled.Schedule,
-                        placeholder = "09:00",
-                        modifier = Modifier.weight(1f)
+                        placeholder = "09:00"
                     )
-
+                    Spacer(modifier = Modifier.height(12.dp))
                     ModernTextField(
-                        value = editableActivity.end_time,
-                        onValueChange = { editableActivity = editableActivity.copy(end_time = it) },
+                        value = activity.end_time,
+                        onValueChange = { activity = activity.copy(end_time = it) },
                         label = "End Time",
                         icon = Icons.Filled.Schedule,
-                        placeholder = "17:00",
-                        modifier = Modifier.weight(1f)
+                        placeholder = "17:00"
                     )
-                }
-
-                // Meeting time
-                ModernTextField(
-                    value = editableActivity.meeting_time,
-                    onValueChange = { editableActivity = editableActivity.copy(meeting_time = it) },
-                    label = "Meeting Time",
-                    icon = Icons.Filled.Group,
-                    placeholder = "08:30"
-                )
-
-                // Activity description
-                OutlinedTextField(
-                    value = editableActivity.activity_description,
-                    onValueChange = { editableActivity = editableActivity.copy(activity_description = it) },
-                    label = { Text("Activity Description") },
-                    placeholder = { Text("Describe the day's activities...") },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3,
-                    maxLines = 5,
-                    shape = RoundedCornerShape(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Color(0xFF667eea),
-                        focusedLabelColor = Color(0xFF667eea),
-                        cursorColor = Color(0xFF667eea)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    ModernTextField(
+                        value = activity.meeting_time,
+                        onValueChange = { activity = activity.copy(meeting_time = it) },
+                        label = "Meeting Time",
+                        icon = Icons.Filled.Group,
+                        placeholder = "08:30"
                     )
-                )
-            }
-        },
-        shape = RoundedCornerShape(16.dp)
-    )
-}
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = activity.activity_description,
+                        onValueChange = { activity = activity.copy(activity_description = it) },
+                        label = { Text("Activity Description") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        maxLines = 5,
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    Button(
+                        onClick = {
+                            val startDateFormatted = formatToISOString(activity.day, activity.start_time)
+                            val endDateFormatted = formatToISOString(activity.day, activity.end_time)
+                            val meetingTimeFormatted = normalizeTimeFormat(activity.meeting_time)
+                            val normalizedDay = normalizeDateFormat(activity.day)
 
-// Reuse existing composables from CreateItineraryView
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TimePickerDialog(
-    onTimeSelected: (Int, Int) -> Unit,
-    onDismiss: () -> Unit,
-    timePickerState: TimePickerState
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onTimeSelected(timePickerState.hour, timePickerState.minute)
+                            val inputDay = try {
+                                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(normalizedDay)
+                            } catch (e: Exception) {
+                                null
+                            }
+
+                            if (startDateFormatted != null && endDateFormatted != null && meetingTimeFormatted != null && inputDay != null) {
+                                if (startDateObj != null && endDateObj != null) {
+                                    if (inputDay.before(startDateObj) || inputDay.after(endDateObj)) {
+                                        // ❌ Show snackbar if date is out of range
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar("❗ Date must be within itinerary duration.")
+                                        }
+                                        return@Button
+                                    }
+                                }
+
+                                if (itineraryId > 0) {
+                                    viewModel.createItineraryDay(
+                                        CreateItineraryDayRequest(
+                                            day = normalizedDay,
+                                            start_time = startDateFormatted,
+                                            end_time = endDateFormatted,
+                                            activity_description = activity.activity_description,
+                                            meeting_time = meetingTimeFormatted,
+                                            itineraryId = itineraryId
+                                        )
+                                    )
+                                    navController?.navigate(listScreen.ListItineraryDayView.name) {
+                                        popUpTo(listScreen.ListItineraryDayView.name) { inclusive = true }
+                                    }
+                                } else {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("❗ Invalid itinerary ID.")
+                                    }
+                                }
+                            } else {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("❗ Invalid date or time format.")
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF667eea))
+                    ) {
+                        Icon(Icons.Filled.Save, contentDescription = "Save")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Save Activity")
+                    }
                 }
-            ) {
-                Text("OK")
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancel")
-            }
-        },
-        text = {
-            TimePicker(
-                state = timePickerState,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
-    )
-}
-
-@Composable
-private fun SectionHeader(title: String) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
+        SnackbarHost(
+            hostState = snackbarHostState,
             modifier = Modifier
-                .width(4.dp)
-                .height(24.dp)
-                .background(
-                    color = Color(0xFF667eea),
-                    shape = RoundedCornerShape(2.dp)
-                )
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = title,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF333333)
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ModernTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    icon: ImageVector,
-    placeholder: String = "",
-    modifier: Modifier = Modifier,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        placeholder = { Text(placeholder, color = Color.Gray) },
-        leadingIcon = {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = Color(0xFF667eea)
-            )
-        },
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color(0xFF667eea),
-            focusedLabelColor = Color(0xFF667eea),
-            cursorColor = Color(0xFF667eea)
-        ),
-        keyboardOptions = keyboardOptions
-    )
+fun formatToISOString(date: String, time: String): String? {
+    return try {
+        val inputDateFormat = SimpleDateFormat("dd-MM-yyyy HH.mm", Locale("id", "ID"))
+        inputDateFormat.timeZone = TimeZone.getTimeZone("Asia/Jakarta") // interpret input as WIB
+
+        val outputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        outputFormat.timeZone = TimeZone.getTimeZone("UTC") // convert to UTC for ISO
+
+        val combined = "$date $time"
+        val parsedDate = inputDateFormat.parse(combined)
+        parsedDate?.let { outputFormat.format(it) }
+    } catch (e: Exception) {
+        Log.e("DATE_ERROR", "Failed to parse date: ${e.message}")
+        null
+    }
+}
+
+fun normalizeTimeFormat(input: String): String {
+    return if (input.contains('.')) {
+        val parts = input.split(".")
+        val hour = parts[0].padStart(2, '0')
+        val minute = parts.getOrNull(1)?.padEnd(2, '0') ?: "00"
+        "$hour:$minute:00"
+    } else if (input.contains(':')) {
+        // Sudah benar tapi belum ada detik
+        val colonParts = input.split(":")
+        when (colonParts.size) {
+            2 -> "${colonParts[0].padStart(2, '0')}:${colonParts[1].padStart(2, '0')}:00"
+            3 -> input // sudah HH:mm:ss
+            else -> "00:00:00"
+        }
+    } else {
+        "00:00:00"
+    }
+}
+
+fun normalizeDateFormat(input: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("dd-MM-yyyy", Locale("id", "ID"))
+        val outputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val date = inputFormat.parse(input)
+        outputFormat.format(date!!)
+    } catch (e: Exception) {
+        Log.e("DATE_ERROR", "Failed to normalize day: ${e.message}")
+        "1970-01-01"
+    }
 }
