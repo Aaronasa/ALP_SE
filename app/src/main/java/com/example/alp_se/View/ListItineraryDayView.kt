@@ -20,8 +20,47 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.alp_se.Model.ItineraryDayModel
+import com.example.alp_se.ViewModel.ItineraryDayViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ListItineraryDayView(
+    navController: NavController = rememberNavController(),
+    onBackPressed: () -> Unit = {},
+    onSharePressed: () -> Unit = {},
+    onDayClicked: (Int) -> Unit = {}
+) {
+    val itineraryId = navController
+        .previousBackStackEntry
+        ?.savedStateHandle
+        ?.get<Int>("itineraryId") ?: 0
+
+    val viewModel: ItineraryDayViewModel = viewModel(factory = ItineraryDayViewModel.Factory)
+    val itineraryDays by viewModel.itineraryDayModel.collectAsState()
+    val statusMessage by viewModel.statusMessage.collectAsState()
+
+    // Fetch the data once this screen appears
+    LaunchedEffect(Unit) {
+        viewModel.getAllItineraryDays()
+    }
+
+    val filteredDays = itineraryDays.filter { it.itineraryId == itineraryId }
+
+    ItineraryListScreen(
+        itineraryDays = filteredDays,
+        tripTitle = "Trip ID $itineraryId",
+        tripDuration = "",
+        onBackPressed = onBackPressed,
+        onSharePressed = onSharePressed,
+        onDayClicked = onDayClicked
+    )
+}
+
 @Composable
 fun ItineraryListScreen(
     itineraryDays: List<ItineraryDayModel>,
@@ -252,15 +291,15 @@ fun getGradientForDay(dayIndex: Int): List<Color> {
     return gradients[dayIndex % gradients.size]
 }
 
-data class ItineraryDayModel(
-    val id: Int = 0,
-    val day: String = "",
-    val start_time: String = "",
-    val end_time: String = "",
-    val activity_description: String = "",
-    val meeting_time: String = "",
-    val itineraryId: Int = 0
-)
+//data class ItineraryDayModel(
+//    val id: Int = 0,
+//    val day: String = "",
+//    val start_time: String = "",
+//    val end_time: String = "",
+//    val activity_description: String = "",
+//    val meeting_time: String = "",
+//    val itineraryId: Int = 0
+//)
 
 @Preview(showBackground = true)
 @Composable

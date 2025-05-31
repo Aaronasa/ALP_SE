@@ -3,6 +3,7 @@ package com.example.alp_se.Repository
 import com.example.alp_se.Model.CreateItineraryRequest
 import com.example.alp_se.Model.GeneralResponseModel
 import com.example.alp_se.Model.GetAllItineraryResponse
+import com.example.alp_se.Model.ItineraryModel
 import com.example.alp_se.Model.UpdateItineraryRequest
 import com.example.alp_se.Service.ItineraryService
 import retrofit2.Response

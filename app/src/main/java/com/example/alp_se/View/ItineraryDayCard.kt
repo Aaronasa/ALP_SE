@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.alp_se.Model.ItineraryDayModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -242,7 +243,7 @@ fun ModernItineraryDayCardPreview() {
         ModernItineraryDayCard(
             itineraryDay = ItineraryDayModel(
                 id = 1,
-                day = "Day 1 - Arrival",
+                day = "30-05-2026",
                 start_time = "09:00",
                 end_time = "18:00",
                 activity_description = "Airport pickup, hotel check-in, welcome dinner at beachfront restaurant with traditional Balinese cuisine and cultural performance.",

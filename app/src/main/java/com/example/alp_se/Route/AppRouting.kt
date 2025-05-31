@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.alp_se.View.HomeView
+import com.example.alp_se.View.ListItineraryDayView
 import com.example.alp_se.View.ListItineraryView
 
 enum class listScreen(){
@@ -41,11 +42,15 @@ fun AppRouting() {
                 })
             }
 
-            composable(
-                route = listScreen.ListItineraryView.name,
-            ) {
-                ListItineraryView()
+            composable(route = listScreen.ListItineraryView.name) {
+                ListItineraryView(navController = NavController)
             }
+
+            composable(route = listScreen.ListItineraryDayView.name) {
+                ListItineraryDayView(navController = NavController)
+            }
+
+
         }
     }
 }
