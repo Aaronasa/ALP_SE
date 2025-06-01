@@ -17,6 +17,7 @@ import com.example.alp_se.View.HomeView
 import com.example.alp_se.View.ItineraryDayDetailView
 import com.example.alp_se.View.ListItineraryDayView
 import com.example.alp_se.View.ListItineraryView
+import com.example.alp_se.View.UpdateItineraryDayView
 
 enum class listScreen(){
     HomeView,
@@ -62,6 +63,10 @@ fun AppRouting() {
 
             composable(route = listScreen.ItineraryDayDetailView.name) {
                 ItineraryDayDetailView(navController = NavController)
+            }
+
+            composable(route = listScreen.UpdateItineraryDayView.name) {
+                UpdateItineraryDayView(navController = NavController)
             }
 
         }

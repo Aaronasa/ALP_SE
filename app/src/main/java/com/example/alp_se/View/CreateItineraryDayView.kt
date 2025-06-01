@@ -154,9 +154,18 @@ fun CreateItineraryDayView(
                             }
 
                             if (startDateFormatted != null && endDateFormatted != null && meetingTimeFormatted != null && inputDay != null) {
+
+                                // ⛔ Validasi: End time tidak boleh lebih awal dari start time
+                                if (endDateFormatted < startDateFormatted) {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("❗ End time cannot be earlier than start time.")
+                                    }
+                                    return@Button
+                                }
+
+                                // ⛔ Validasi: Tanggal harus dalam rentang itinerary
                                 if (startDateObj != null && endDateObj != null) {
                                     if (inputDay.before(startDateObj) || inputDay.after(endDateObj)) {
-                                        // ❌ Show snackbar if date is out of range
                                         coroutineScope.launch {
                                             snackbarHostState.showSnackbar("❗ Date must be within itinerary duration.")
                                         }
@@ -164,6 +173,7 @@ fun CreateItineraryDayView(
                                     }
                                 }
 
+                                // ✅ Buat aktivitas
                                 if (itineraryId > 0) {
                                     viewModel.createItineraryDay(
                                         CreateItineraryDayRequest(
@@ -197,6 +207,7 @@ fun CreateItineraryDayView(
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Save Activity")
                     }
+
                 }
             }
         }
@@ -211,20 +222,21 @@ fun CreateItineraryDayView(
 
 fun formatToISOString(date: String, time: String): String? {
     return try {
-        val inputDateFormat = SimpleDateFormat("dd-MM-yyyy HH.mm", Locale("id", "ID"))
-        inputDateFormat.timeZone = TimeZone.getTimeZone("Asia/Jakarta") // interpret input as WIB
+        val inputFormat = SimpleDateFormat("dd-MM-yyyy HH.mm", Locale("id", "ID"))
+        inputFormat.timeZone = TimeZone.getTimeZone("Asia/Jakarta")
 
         val outputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-        outputFormat.timeZone = TimeZone.getTimeZone("UTC") // convert to UTC for ISO
+        outputFormat.timeZone = TimeZone.getTimeZone("UTC")
 
         val combined = "$date $time"
-        val parsedDate = inputDateFormat.parse(combined)
+        val parsedDate = inputFormat.parse(combined)
         parsedDate?.let { outputFormat.format(it) }
     } catch (e: Exception) {
         Log.e("DATE_ERROR", "Failed to parse date: ${e.message}")
         null
     }
 }
+
 
 fun normalizeTimeFormat(input: String): String {
     return if (input.contains('.')) {

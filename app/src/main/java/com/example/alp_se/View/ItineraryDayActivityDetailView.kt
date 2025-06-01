@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.alp_se.Model.ItineraryDayModel
+import com.example.alp_se.Route.listScreen
 import com.example.alp_se.ViewModel.ItineraryDayViewModel
 import java.time.LocalDate
 import java.time.LocalTime
@@ -179,21 +181,43 @@ fun ItineraryDayDetailView(
 
                             StatItem(
                                 value = if (filteredActivities.isNotEmpty()) {
-                                    val startTimes = filteredActivities.mapNotNull {
-                                        try { OffsetDateTime.parse(it.start_time) } catch (e: Exception) { null }
+                                    try {
+                                        val wibZone = ZoneOffset.ofHours(7)
+                                        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+                                        val earliestStart = filteredActivities
+                                            .minByOrNull { OffsetDateTime.parse(it.start_time) }
+                                            ?.start_time
+                                            ?.let {
+                                                OffsetDateTime.parse(it)
+                                                    .withOffsetSameInstant(wibZone)
+                                                    .format(timeFormatter)
+                                            }
+
+                                        val latestEnd = filteredActivities
+                                            .maxByOrNull { OffsetDateTime.parse(it.end_time) }
+                                            ?.end_time
+                                            ?.let {
+                                                OffsetDateTime.parse(it)
+                                                    .withOffsetSameInstant(wibZone)
+                                                    .format(timeFormatter)
+                                            }
+
+                                        if (earliestStart != null && latestEnd != null) {
+                                            "$earliestStart - $latestEnd"
+                                        } else {
+                                            "N/A"
+                                        }
+                                    } catch (e: Exception) {
+                                        "N/A"
                                     }
-                                    val endTimes = filteredActivities.mapNotNull {
-                                        try { OffsetDateTime.parse(it.end_time) } catch (e: Exception) { null }
-                                    }
-                                    if (startTimes.isNotEmpty() && endTimes.isNotEmpty()) {
-                                        val earliest = startTimes.minOrNull()?.toLocalTime()?.format(DateTimeFormatter.ofPattern("HH:mm"))
-                                        val latest = endTimes.maxOrNull()?.toLocalTime()?.format(DateTimeFormatter.ofPattern("HH:mm"))
-                                        "$earliest-$latest"
-                                    } else "N/A"
-                                } else "N/A",
+                                } else {
+                                    "N/A"
+                                },
                                 label = "Duration",
                                 color = Color(0xFF10B981)
                             )
+
 
                             StatItem(
                                 value = "${if (filteredActivities.isNotEmpty()) 100 else 0}%",
@@ -274,7 +298,7 @@ fun ItineraryDayDetailView(
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             items(filteredActivities.sortedBy { it.start_time }) { activity ->
-                                ModernActivityCard(activity = activity)
+                                ModernActivityCard(activity = activity, navController = navController)
                             }
                             item {
                                 Spacer(modifier = Modifier.height(24.dp))
@@ -313,7 +337,7 @@ private fun StatItem(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-private fun ModernActivityCard(activity: ItineraryDayModel) {
+private fun ModernActivityCard(activity: ItineraryDayModel,  navController: NavController) {
     val wibZone = ZoneOffset.ofHours(7)
     val formatter = DateTimeFormatter.ofPattern("HH:mm", Locale.ENGLISH)
 
@@ -438,13 +462,22 @@ private fun ModernActivityCard(activity: ItineraryDayModel) {
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    navController.currentBackStackEntry?.savedStateHandle?.set("editId", activity.id)
+                    navController.navigate(listScreen.UpdateItineraryDayView.name)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF667eea)),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.White)
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Edit", color = Color.White)
+            }
         }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-fun parseUtcDateOnly(dateStr: String): LocalDate {
-    return OffsetDateTime.parse(dateStr)
-        .withOffsetSameInstant(ZoneOffset.UTC)
-        .toLocalDate()
-}
