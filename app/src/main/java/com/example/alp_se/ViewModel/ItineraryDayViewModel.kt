@@ -1,5 +1,6 @@
 package com.example.alp_se.ViewModel
 
+import android.os.Environment
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,10 +13,19 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.alp_se.Model.*
 import com.example.alp_se.Repository.ItineraryDayRepository
 import com.example.alp_se.TourronApplication
+import com.itextpdf.text.Document
+import com.itextpdf.text.Paragraph
+import com.itextpdf.text.pdf.PdfWriter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import android.content.Context
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import org.apache.poi.ss.usermodel.CellStyle
+import org.apache.poi.ss.usermodel.HorizontalAlignment
+import java.io.File
+import java.io.FileOutputStream
 
 class ItineraryDayViewModel(
     private val itineraryDayRepository: ItineraryDayRepository
@@ -42,6 +52,10 @@ class ItineraryDayViewModel(
     fun updateActivityDescription(value: String) { activity_description = value }
     fun updateMeetingTime(value: String) { meeting_time = value }
     fun updateItineraryId(value: Int) { itineraryId = value }
+
+    fun clearStatusMessage() {
+        _statusMessage.value = null
+    }
 
     fun getAllItineraryDays() {
         viewModelScope.launch {
@@ -106,6 +120,82 @@ class ItineraryDayViewModel(
             }
         }
     }
+
+    fun exportToPdf(itineraryDays: List<ItineraryDayModel>, context: android.content.Context) {
+        viewModelScope.launch {
+            try {
+                val document = Document()
+                val pdfDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+                val pdfFile = File(pdfDir, "itinerary_export.pdf")
+                PdfWriter.getInstance(document, FileOutputStream(pdfFile))
+
+                document.open()
+                document.add(Paragraph("Itinerary Days\n\n"))
+
+                itineraryDays.forEachIndexed { index, item ->
+                    document.add(
+                        Paragraph(
+                            "Day ${index + 1}:\n" +
+                                    "Date: ${item.day}\n" +
+                                    "Start: ${item.start_time}, End: ${item.end_time}\n" +
+                                    "Activity: ${item.activity_description}\n\n"
+                        )
+                    )
+                }
+
+                document.close()
+                _statusMessage.value = "Exported to PDF: ${pdfFile.absolutePath}"
+            } catch (e: Exception) {
+                _statusMessage.value = "PDF export failed: ${e.message}"
+            }
+        }
+    }
+
+    fun exportToExcel(itineraryDays: List<ItineraryDayModel>, context: Context) {
+        viewModelScope.launch {
+            try {
+                val workbook = XSSFWorkbook()
+                val sheet = workbook.createSheet("Itinerary")
+
+                // Header Row
+                val headerRow = sheet.createRow(0)
+                val headers = listOf("Day", "Start Time", "End Time", "Description", "Meeting Time")
+
+                headers.forEachIndexed { index, title ->
+                    val cell = headerRow.createCell(index)
+                    cell.setCellValue(title)
+                }
+
+                // Data Rows
+                itineraryDays.forEachIndexed { index, item ->
+                    val row = sheet.createRow(index + 1)
+                    row.createCell(0).setCellValue(item.day)
+                    row.createCell(1).setCellValue(item.start_time)
+                    row.createCell(2).setCellValue(item.end_time)
+                    row.createCell(3).setCellValue(item.activity_description ?: "")
+                    row.createCell(4).setCellValue(item.meeting_time ?: "")
+                }
+
+                // Autosize
+                for (i in headers.indices) {
+                    sheet.autoSizeColumn(i)
+                }
+
+                // Save File
+                val fileDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+                val file = File(fileDir, "itinerary_export.xlsx")
+                val outputStream = FileOutputStream(file)
+                workbook.write(outputStream)
+                outputStream.close()
+                workbook.close()
+
+                _statusMessage.value = "Exported to Excel: ${file.absolutePath}"
+            } catch (e: Exception) {
+                _statusMessage.value = "Excel export failed: ${e.message}"
+            }
+        }
+    }
+
 
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {

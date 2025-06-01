@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,9 +26,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.alp_se.Component.StatusSnackbar
+import com.example.alp_se.Component.rememberStatusSnackbar
 import com.example.alp_se.Model.ItineraryDayModel
 import com.example.alp_se.Route.listScreen
 import com.example.alp_se.ViewModel.ItineraryDayViewModel
@@ -55,6 +59,9 @@ fun ListItineraryDayView(
     val viewModel: ItineraryDayViewModel = viewModel(factory = ItineraryDayViewModel.Factory)
     val itineraryDays by viewModel.itineraryDayModel.collectAsState()
     val statusMessage by viewModel.statusMessage.collectAsState()
+    val snackbarHostState = rememberStatusSnackbar(statusMessage) {
+        viewModel.clearStatusMessage()
+    }
 
     val itineraryViewModel: ItineraryViewModel = viewModel(factory = ItineraryViewModel.Factory)
     val allItineraries by itineraryViewModel.itineraryModel.collectAsState()
@@ -123,6 +130,11 @@ fun ListItineraryDayView(
                 }
             )
         }
+        StatusSnackbar(
+            statusMessage = statusMessage,
+            onDismiss = { viewModel.clearStatusMessage() },
+            snackbarHostState = snackbarHostState
+        )
 
         // ✅ Tombol Create di kanan bawah
         FloatingActionButton(
@@ -159,6 +171,8 @@ fun ItineraryListScreen(
     onSharePressed: () -> Unit = {},
     onDayClicked: (Int) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    var showMenu by remember { mutableStateOf(false) }
     var selectedDay by remember { mutableStateOf<Int?>(null) }
     val viewModel: ItineraryDayViewModel = viewModel(factory = ItineraryDayViewModel.Factory)
 
@@ -207,6 +221,44 @@ fun ItineraryListScreen(
                                 contentDescription = "Back",
                                 tint = Color.White
                             )
+                        }
+
+                        Box {
+                            IconButton(
+                                onClick = { showMenu = true },
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(
+                                        Color.White.copy(alpha = 0.2f),
+                                        RoundedCornerShape(12.dp)
+                                    )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FileDownload,
+                                    contentDescription = "Export",
+                                    tint = Color.White
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false },
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Export as PDF") },
+                                    onClick = {
+                                        showMenu = false
+                                        viewModel.exportToPdf(itineraryDays, context)
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Export as Excel") },
+                                    onClick = {
+                                        showMenu = false
+                                        viewModel.exportToExcel(itineraryDays, context)
+                                    }
+                                )
+                            }
                         }
 
                         IconButton(

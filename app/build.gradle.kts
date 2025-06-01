@@ -10,10 +10,10 @@ android {
 
     defaultConfig {
         applicationId = "com.example.alp_se"
-        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        minSdk = 26
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -62,6 +62,8 @@ dependencies {
     implementation ("com.squareup.moshi:moshi:1.12.0")
     implementation ("com.squareup.moshi:moshi-kotlin:1.12.0")
     implementation ("com.squareup.moshi:moshi-adapters:1.12.0")
+    implementation ("com.itextpdf:itextg:5.5.10")
+    implementation ("org.apache.poi:poi-ooxml:5.2.3")
 
     implementation ("androidx.activity:activity-compose:1.3.1")
     implementation ("androidx.compose.foundation:foundation:1.0.1")
