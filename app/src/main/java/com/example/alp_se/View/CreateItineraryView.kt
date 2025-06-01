@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.alp_se.Component.StatusSnackbar
 import com.example.alp_se.Model.CreateItineraryRequest
 import com.example.alp_se.Route.listScreen
 import com.example.alp_se.ViewModel.ItineraryViewModel
@@ -44,7 +45,7 @@ import java.util.*
 fun CreateItineraryView(
     onBack: () -> Unit = {},
     navController: NavController? = null,
-    itineraryViewModel: ItineraryViewModel = viewModel()
+    itineraryViewModel: ItineraryViewModel = viewModel(factory = ItineraryViewModel.Factory),
 ) {
     // Use ViewModel state directly instead of local state
     val title = itineraryViewModel.title
@@ -70,12 +71,16 @@ fun CreateItineraryView(
 
     // Listen to status messages
     val statusMessage by itineraryViewModel.statusMessage.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Show status messages
+    // Handle navigation after successful creation
     LaunchedEffect(statusMessage) {
-        statusMessage?.let { message ->
-            // You can show a Toast or Snackbar here if needed
-            println("Status: $message") // For debugging
+        if (statusMessage?.contains("successfully") == true) {
+            // Wait a bit for the user to see the success message
+            kotlinx.coroutines.delay(2000)
+            navController?.navigate(listScreen.ListItineraryView.name) {
+                popUpTo(listScreen.ListItineraryView.name) { inclusive = true }
+            }
         }
     }
 
@@ -334,7 +339,6 @@ fun CreateItineraryView(
 
                             println("Request: $request") // Debug log
                             itineraryViewModel.createItinerary(request)
-                            navController?.navigate(listScreen.ListItineraryView.name)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -355,6 +359,17 @@ fun CreateItineraryView(
                     Spacer(modifier = Modifier.height(24.dp))
                 }
             }
+        }
+
+        // Status Snackbar
+        Box(
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            StatusSnackbar(
+                statusMessage = statusMessage,
+                onDismiss = { itineraryViewModel.clearStatusMessage() },
+                snackbarHostState = snackbarHostState
+            )
         }
 
         // Date Pickers
@@ -623,10 +638,8 @@ private fun ModernTextField(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun CreateItineraryViewPreview() {
-    // Preview without NavController and using default ViewModel
     CreateItineraryView(
         onBack = {},            // No-op for back
         navController = null    // No navigation in preview
     )
 }
-

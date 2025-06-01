@@ -19,6 +19,7 @@ import com.example.alp_se.View.CreateItineraryView
 import com.example.alp_se.View.HomeView
 import com.example.alp_se.View.ListItineraryDayView
 import com.example.alp_se.View.ListItineraryView
+import com.example.alp_se.View.UpdateItineraryView
 import com.example.alp_se.ViewModel.ItineraryViewModel
 
 enum class listScreen(){
@@ -52,6 +53,10 @@ fun AppRouting(
                 })
             }
 
+            composable(route = listScreen.CreateItineraryView.name) {
+                CreateItineraryView(navController = NavController)
+            }
+
             composable(route = listScreen.ListItineraryView.name) {
                 ListItineraryView(navController = NavController)
             }
@@ -60,7 +65,22 @@ fun AppRouting(
                 ListItineraryDayView(navController = NavController)
             }
 
-
+            composable(
+                route = "${listScreen.UpdateItineraryView.name}/{itineraryId}",
+                arguments = listOf(
+                    navArgument("itineraryId") {
+                        type = NavType.IntType
+                        defaultValue = 0
+                    }
+                )
+            ) { backStackEntry ->
+                val itineraryId = backStackEntry.arguments?.getInt("itineraryId") ?: 0
+                println("AppRouting - Received itineraryId: $itineraryId") // Debug log
+                UpdateItineraryView(
+                    navController = NavController,
+                    itineraryId = itineraryId
+                )
+            }
         }
     }
 }
