@@ -1,11 +1,15 @@
 package com.example.alp_se.View
 
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
@@ -25,8 +29,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.alp_se.Model.ItineraryDayModel
+import com.example.alp_se.Route.listScreen
 import com.example.alp_se.ViewModel.ItineraryDayViewModel
+import com.example.alp_se.ViewModel.ItineraryViewModel
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListItineraryDayView(
@@ -44,26 +56,103 @@ fun ListItineraryDayView(
     val itineraryDays by viewModel.itineraryDayModel.collectAsState()
     val statusMessage by viewModel.statusMessage.collectAsState()
 
+    val itineraryViewModel: ItineraryViewModel = viewModel(factory = ItineraryViewModel.Factory)
+    val allItineraries by itineraryViewModel.itineraryModel.collectAsState()
+
     // Fetch the data once this screen appears
-    LaunchedEffect(Unit) {
+    LaunchedEffect(itineraryId) {
         viewModel.getAllItineraryDays()
+        itineraryViewModel.getAllItineraries()
     }
 
-    val filteredDays = itineraryDays.filter { it.itineraryId == itineraryId }
+    val mergedDays = itineraryDays
+        .filter { it.itineraryId == itineraryId }
+        .groupBy { it.day }
+        .map { (day, activities) ->
+            val earliestStart = activities.minByOrNull { it.start_time }?.start_time ?: ""
+            val latestEnd = activities.maxByOrNull { it.end_time }?.end_time ?: ""
+            ItineraryDayModel(
+                id = activities.first().id,
+                day = day,
+                start_time = earliestStart,
+                end_time = latestEnd,
+                activity_description = "", // Optional: combine text if you want
+                meeting_time = "", // Optional: set logic if needed
+                itineraryId = itineraryId
+            )
+        }
+    val itinerary = allItineraries.find { it.id == itineraryId }
+    val tripTitle = itinerary?.title ?: "Trip ID $itineraryId"
+    val startDateFormatted = itinerary?.start_date?.let {
+        OffsetDateTime.parse(it).format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.ENGLISH))
+    }
+    val endDateFormatted = itinerary?.end_date?.let {
+        OffsetDateTime.parse(it).format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.ENGLISH))
+    }
+    val tripDuration = "$startDateFormatted – $endDateFormatted"
 
-    ItineraryListScreen(
-        itineraryDays = filteredDays,
-        tripTitle = "Trip ID $itineraryId",
-        tripDuration = "",
-        onBackPressed = onBackPressed,
-        onSharePressed = onSharePressed,
-        onDayClicked = onDayClicked
-    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF667eea),
+                        Color(0xFFF8F9FA)
+                    )
+                )
+            )
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            ItineraryListScreen(
+                itineraryDays = mergedDays,
+                rawItineraryDays = itineraryDays,
+                tripTitle = tripTitle,
+                tripDuration = tripDuration,
+                onBackPressed = {
+                    navController.popBackStack()
+                },
+                onSharePressed = onSharePressed,
+                onDayClicked = { dayIndex ->
+                    val selectedDay = OffsetDateTime.parse(mergedDays[dayIndex].day).toLocalDate().toString()
+                    navController.currentBackStackEntry?.savedStateHandle?.apply {
+                        set("selectedDay", selectedDay)
+                        set("itineraryId", itineraryId)
+                    }
+                    navController.navigate(listScreen.ItineraryDayDetailView.name)
+                }
+            )
+        }
+
+        // ✅ Tombol Create di kanan bawah
+        FloatingActionButton(
+            onClick = {
+                Log.d("DEBUG", "Navigating to Create View with itineraryId = $itineraryId")
+                navController.currentBackStackEntry?.savedStateHandle?.apply {
+                    set("itineraryId", itineraryId)
+                    set("startDate", itinerary?.start_date)
+                    set("endDate", itinerary?.end_date)
+
+                }
+
+                navController.navigate(listScreen.CreateItineraryDayView.name)
+            },
+            containerColor = Color(0xFF667eea),
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp)
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Create", tint = Color.White)
+
+        }
+    }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ItineraryListScreen(
     itineraryDays: List<ItineraryDayModel>,
+    rawItineraryDays: List<ItineraryDayModel>,
     tripTitle: String = "My Trip",
     tripDuration: String = "",
     onBackPressed: () -> Unit = {},
@@ -71,6 +160,8 @@ fun ItineraryListScreen(
     onDayClicked: (Int) -> Unit = {}
 ) {
     var selectedDay by remember { mutableStateOf<Int?>(null) }
+    val viewModel: ItineraryDayViewModel = viewModel(factory = ItineraryDayViewModel.Factory)
+
 
     Box(
         modifier = Modifier
@@ -237,20 +328,50 @@ fun ItineraryListScreen(
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         itemsIndexed(itineraryDays) { index, itineraryDay ->
+
+                            val originalDayRaw = itineraryDay.day
+
+                            val parsedDate = OffsetDateTime.parse(itineraryDay.day)
+                            val formattedDate = parsedDate.format(DateTimeFormatter.ofPattern("dd-MMMM", Locale.ENGLISH))
+
+                            val wibZone = java.time.ZoneId.of("Asia/Jakarta")
+                            val timeFormatter = DateTimeFormatter.ofPattern("HH.mm", Locale.ENGLISH).withZone(wibZone)
+
+                            val startTime = OffsetDateTime.parse(itineraryDay.start_time).atZoneSameInstant(wibZone).format(timeFormatter)
+                            val endTime = OffsetDateTime.parse(itineraryDay.end_time).atZoneSameInstant(wibZone).format(timeFormatter)
+
+                            // Create a new itineraryDay with formatted time
+                            val displayModel = itineraryDay.copy(
+//                                day = "Day ${index + 1} ($formattedDate)",
+                                start_time = startTime,
+                                end_time = endTime
+                            )
+
                             ModernItineraryDayCard(
-                                itineraryDay = itineraryDay,
+                                itineraryDay = displayModel,
                                 dayNumber = index + 1,
                                 gradientColors = getGradientForDay(index),
                                 onClick = {
                                     selectedDay = index
                                     onDayClicked(index)
+                                },
+                                onDeleteAllByDate = {
+                                    val targetDate = OffsetDateTime.parse(originalDayRaw).toLocalDate()
+                                    val itemsToDelete = rawItineraryDays.filter {
+                                        OffsetDateTime.parse(it.day).toLocalDate() == targetDate
+                                    }
+                                    itemsToDelete.forEach {
+                                        viewModel.deleteItineraryDay(it.id)
+                                    }
                                 }
                             )
+
                         }
                     }
                 }
             }
         }
+
     }
 }
 
@@ -291,16 +412,8 @@ fun getGradientForDay(dayIndex: Int): List<Color> {
     return gradients[dayIndex % gradients.size]
 }
 
-//data class ItineraryDayModel(
-//    val id: Int = 0,
-//    val day: String = "",
-//    val start_time: String = "",
-//    val end_time: String = "",
-//    val activity_description: String = "",
-//    val meeting_time: String = "",
-//    val itineraryId: Int = 0
-//)
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true)
 @Composable
 fun ItineraryListScreenPreview() {
@@ -355,6 +468,7 @@ fun ItineraryListScreenPreview() {
     MaterialTheme {
         ItineraryListScreen(
             itineraryDays = sampleItineraryDays,
+            rawItineraryDays = sampleItineraryDays,
             tripTitle = "Bali Adventure 2025",
             tripDuration = "March 15 - March 20, 2025"
         )

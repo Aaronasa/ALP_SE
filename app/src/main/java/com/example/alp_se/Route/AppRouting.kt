@@ -1,5 +1,7 @@
 package com.example.alp_se.Route
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
@@ -16,11 +18,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.alp_se.AppContainer
 import com.example.alp_se.View.CreateItineraryView
+import com.example.alp_se.View.CreateItineraryDayView
 import com.example.alp_se.View.HomeView
+import com.example.alp_se.View.ItineraryDayDetailView
 import com.example.alp_se.View.ListItineraryDayView
 import com.example.alp_se.View.ListItineraryView
 import com.example.alp_se.View.UpdateItineraryView
 import com.example.alp_se.ViewModel.ItineraryViewModel
+import com.example.alp_se.View.UpdateItineraryDayView
 
 enum class listScreen(){
     HomeView,
@@ -29,9 +34,11 @@ enum class listScreen(){
     ListItineraryView,
     CreateItineraryDayView,
     UpdateItineraryDayView,
-    ListItineraryDayView
+    ListItineraryDayView,
+    ItineraryDayDetailView
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppRouting(
     itineraryViewModel: ItineraryViewModel = viewModel(factory = ItineraryViewModel.Factory),
@@ -81,6 +88,18 @@ fun AppRouting(
                     itineraryId = itineraryId
                 )
             }
+            composable(route = listScreen.CreateItineraryDayView.name) {
+                CreateItineraryDayView(navController = NavController)
+            }
+
+            composable(route = listScreen.ItineraryDayDetailView.name) {
+                ItineraryDayDetailView(navController = NavController)
+            }
+
+            composable(route = listScreen.UpdateItineraryDayView.name) {
+                UpdateItineraryDayView(navController = NavController)
+            }
+
         }
     }
 }

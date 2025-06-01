@@ -601,7 +601,7 @@ private fun SectionHeader(title: String) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ModernTextField(
+fun ModernTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,

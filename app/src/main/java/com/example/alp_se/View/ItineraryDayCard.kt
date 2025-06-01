@@ -1,5 +1,7 @@
 package com.example.alp_se.View
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -28,13 +30,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.alp_se.Model.ItineraryDayModel
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModernItineraryDayCard(
     itineraryDay: ItineraryDayModel,
     dayNumber: Int? = null,
     onClick: () -> Unit = {},
+    onDeleteAllByDate: (String) -> Unit = {},
     gradientColors: List<Color> = listOf(
         Color(0xFF667eea),
         Color(0xFF764ba2)
@@ -122,7 +129,13 @@ fun ModernItineraryDayCard(
                     // Title and status
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = itineraryDay.day.ifEmpty { "Day ${dayNumber ?: ""}" },
+                            text = try {
+                                val parsedDate = OffsetDateTime.parse(itineraryDay.day)
+                                val formattedDate = parsedDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale("id", "ID")))
+                                "Day ${dayNumber ?: ""} ($formattedDate)"
+                            } catch (e: Exception) {
+                                "Day ${dayNumber ?: ""}"
+                            },
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF2D3748),
@@ -164,41 +177,16 @@ fun ModernItineraryDayCard(
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(12.dp))
 
-                // Description
-                if (isExpanded) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Divider(
-                        color = Color.Gray.copy(alpha = 0.2f),
-                        thickness = 1.dp,
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
-
-                    Text(
-                        text = "Activity Details",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF4A5568),
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-
-                    Text(
-                        text = itineraryDay.activity_description.ifEmpty { "No description available" },
-                        fontSize = 14.sp,
-                        color = Color(0xFF718096),
-                        lineHeight = 20.sp
-                    )
-                } else {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = itineraryDay.activity_description.ifEmpty { "No description available" },
-                        fontSize = 14.sp,
-                        color = Color(0xFF718096),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        lineHeight = 18.sp
-                    )
+                Button(
+                    onClick = { onDeleteAllByDate(itineraryDay.day) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Delete Itinerary Day", color = Color.White)
                 }
+
             }
         }
     }
@@ -236,6 +224,7 @@ private fun InfoChip(
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Preview(showBackground = true, backgroundColor = 0xFFFAFAFA)
 @Composable
 fun ModernItineraryDayCardPreview() {
