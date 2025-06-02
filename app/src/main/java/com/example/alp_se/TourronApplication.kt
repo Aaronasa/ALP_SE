@@ -14,6 +14,6 @@ class TourronApplication: Application() {
     lateinit var container: AppContainer
     override fun onCreate() {
         super.onCreate()
-        container = DefaultAppContainer(dataStore)
+        container = DefaultAppContainer(applicationContext.dataStore)
     }
 }

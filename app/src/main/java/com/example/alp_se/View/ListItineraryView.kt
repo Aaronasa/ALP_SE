@@ -44,15 +44,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.alp_se.Component.StatusSnackbar
 import com.example.alp_se.Model.ItineraryModel
 import com.example.alp_se.Route.listScreen
 import com.example.alp_se.ViewModel.ItineraryViewModel
 
-fun formatDateString(dateString: String): String {
+private fun formatDateString(dateString: String): String {
     return try {
         dateString.substringBefore('T')
     } catch (e: Exception) {
-        dateString // Return original string if parsing fails
+        dateString
     }
 }
 
@@ -61,8 +62,9 @@ fun ListItineraryView(
     itineraryViewModel: ItineraryViewModel = viewModel(factory = ItineraryViewModel.Factory),
     navController: NavController? = null
 ) {
-    // Sample data untuk preview
+    // Collect state from ViewModel
     val itineraries by itineraryViewModel.itineraryModel.collectAsState()
+    val statusMessage by itineraryViewModel.statusMessage.collectAsState()
 
     LaunchedEffect (Unit) {
         itineraryViewModel.getAllItineraries()
@@ -168,7 +170,6 @@ fun ListItineraryView(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(itineraries) { itinerary ->
-
                     println("Card: ${itinerary.title}, ID: ${itinerary.id}")
 
                     ItineraryCard(
@@ -178,6 +179,11 @@ fun ListItineraryView(
                         endDate = formatDateString(itinerary.end_date),
                         location = itinerary.location,
                         participantCount = itinerary.total_person,
+                        onEdit = { itineraryId ->
+                            println("Navigating to update view for ID: $itineraryId")
+                            // Fixed: Use navigation arguments instead of savedStateHandle
+                            navController?.navigate("${listScreen.UpdateItineraryView.name}/$itineraryId")
+                        },
                         onDelete = { itineraryId ->
                             itineraryViewModel.deleteItinerary(itineraryId)
                         },
@@ -214,6 +220,14 @@ fun ListItineraryView(
                 modifier = Modifier.size(70.dp)
             )
         }
+
+        // Status Snackbar - positioned at bottom
+        StatusSnackbar(
+            statusMessage = statusMessage,
+            onDismiss = {
+                itineraryViewModel.clearStatusMessage()
+            }
+        )
     }
 }
 

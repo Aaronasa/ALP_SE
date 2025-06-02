@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
@@ -51,6 +52,7 @@ fun ItineraryCard(
     endDate: String,
     location: String,
     participantCount: Int,
+    onEdit: ((Int) -> Unit)? = null,
     onDelete: ((Int) -> Unit)? = null,
     onClick: (() -> Unit)? = null
 ) {
@@ -83,7 +85,7 @@ fun ItineraryCard(
                     .fillMaxWidth()
                     .padding(20.dp)
             ) {
-                // Header with title, participant count, and delete button
+                // Header with title, participant count, edit and delete buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -124,6 +126,27 @@ fun ItineraryCard(
                                     color = Color.White,
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+
+                        // Edit button (only show if onEdit is provided)
+                        if (onEdit != null && itinerary != null) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            IconButton(
+                                onClick = { onEdit(itinerary.id) },
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(
+                                        color = Color.Green.copy(alpha = 0.2f),
+                                        shape = CircleShape
+                                    )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Edit,
+                                    contentDescription = "Edit Itinerary",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
@@ -290,6 +313,7 @@ fun ItineraryCardPreview() {
                 endDate = "22 Dec",
                 location = "Denpasar, Bali",
                 participantCount = 5,
+                onEdit = { /* Preview - no action */ },
                 onDelete = { /* Preview - no action */ }
             )
 
@@ -299,6 +323,7 @@ fun ItineraryCardPreview() {
                 endDate = "18 Jan",
                 location = "Jakarta, Indonesia",
                 participantCount = 3,
+                onEdit = { /* Preview - no action */ },
                 onDelete = { /* Preview - no action */ }
             )
         }

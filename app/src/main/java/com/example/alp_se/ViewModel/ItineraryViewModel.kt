@@ -45,10 +45,8 @@ class ItineraryViewModel(
     private val _itineraryModel = MutableStateFlow<List<ItineraryModel>>(emptyList())
     val itineraryModel: StateFlow<List<ItineraryModel>> = _itineraryModel
 
-
     private val _statusMessage = MutableStateFlow<String?>(null)
     val statusMessage: StateFlow<String?> = _statusMessage.asStateFlow()
-
 
     fun updateTitle(newTitle: String) {
         title = newTitle
@@ -82,18 +80,35 @@ class ItineraryViewModel(
         location = newLocation
     }
 
+    // Add function to clear status message
+    fun clearStatusMessage() {
+        _statusMessage.value = null
+    }
+
+    // Add function to clear form fields
+    fun clearForm() {
+        title = ""
+        start_date = ""
+        end_date = ""
+        estimate_start = ""
+        estimate_end = ""
+        total_person = ""
+        country = ""
+        location = ""
+    }
+
     fun getAllItineraries() {
         viewModelScope.launch {
             try {
                 val response = itineraryRepository.getAllItineraries()
                 if (response.isSuccessful) {
                     _itineraryModel.value = response.body()?.data as MutableList<ItineraryModel>
-                    _statusMessage.value = "Itineraries loaded successfully."
+                    // Don't show success message for loading itineraries
                 } else {
                     _statusMessage.value = "Failed to load itineraries: ${response.message()}"
                 }
             } catch (e: Exception) {
-                _statusMessage.value = "Error: ${e.message}"
+                _statusMessage.value = "Error loading itineraries: ${e.message}"
             }
         }
     }
@@ -103,12 +118,14 @@ class ItineraryViewModel(
             try {
                 val response = itineraryRepository.createItinerary(itinerary)
                 if (response.isSuccessful) {
-                    _statusMessage.value = "Itinerary created successfully."
+                    _statusMessage.value = "Itinerary created successfully!"
+                    clearForm() // Clear form after successful creation
+                    getAllItineraries() // Refresh the list
                 } else {
                     _statusMessage.value = "Failed to create itinerary: ${response.message()}"
                 }
             } catch (e: Exception) {
-                _statusMessage.value = "Error: ${e.message}"
+                _statusMessage.value = "Error creating itinerary: ${e.message}"
             }
         }
     }
@@ -118,12 +135,13 @@ class ItineraryViewModel(
             try {
                 val response = itineraryRepository.updateItinerary(id, itinerary)
                 if (response.isSuccessful) {
-                    _statusMessage.value = "Itinerary updated successfully."
+                    _statusMessage.value = "Itinerary updated successfully!"
+                    getAllItineraries() // Refresh the list
                 } else {
                     _statusMessage.value = "Failed to update itinerary: ${response.message()}"
                 }
             } catch (e: Exception) {
-                _statusMessage.value = "Error: ${e.message}"
+                _statusMessage.value = "Error updating itinerary: ${e.message}"
             }
         }
     }
@@ -133,13 +151,13 @@ class ItineraryViewModel(
             try {
                 val response = itineraryRepository.deleteItinerary(id)
                 if (response.isSuccessful) {
-                    _statusMessage.value = "Itinerary deleted successfully."
-                    getAllItineraries()
+                    _statusMessage.value = "Itinerary deleted successfully!"
+                    getAllItineraries() // Refresh the list
                 } else {
                     _statusMessage.value = "Failed to delete itinerary: ${response.message()}"
                 }
             } catch (e: Exception) {
-                _statusMessage.value = "Error: ${e.message}"
+                _statusMessage.value = "Error deleting itinerary: ${e.message}"
             }
         }
     }
