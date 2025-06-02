@@ -126,21 +126,13 @@ fun UpdateItineraryView(
 
     // Pre-fill the form with current itinerary data when itineraries are loaded
     LaunchedEffect(itineraries, itineraryId) {
-        println("UpdateItineraryView - LaunchedEffect triggered. Itineraries count: ${itineraries.size}, itineraryId: $itineraryId")
         if (itineraries.isNotEmpty() && itineraryId != 0) {
             currentItinerary?.let { itinerary ->
-                println("UpdateItineraryView - Found itinerary: ${itinerary.title} (ID: ${itinerary.id})")
                 itineraryViewModel.updateTitle(itinerary.title)
                 itineraryViewModel.updateStartDate(formatDateString(itinerary.start_date))
                 itineraryViewModel.updateEndDate(formatDateString(itinerary.end_date))
                 val formattedStartTime = formatTimeString(itinerary.estimate_Start)
                 val formattedEndTime = formatTimeString(itinerary.estimate_End)
-
-                println("UpdateItineraryView - Raw start time: ${itinerary.estimate_Start}")
-                println("UpdateItineraryView - Formatted start time: $formattedStartTime")
-                println("UpdateItineraryView - Raw end time: ${itinerary.estimate_End}")
-                println("UpdateItineraryView - Formatted end time: $formattedEndTime")
-
                 itineraryViewModel.updateEstimateStart(formattedStartTime)
                 itineraryViewModel.updateEstimateEnd(formattedEndTime)
                 itineraryViewModel.updateTotalPerson(itinerary.total_person.toString())
@@ -159,7 +151,6 @@ fun UpdateItineraryView(
     // Navigate back after successful update
     LaunchedEffect(statusMessage) {
         if (statusMessage?.contains("updated successfully") == true) {
-            // Delay navigation slightly to show the snackbar
             kotlinx.coroutines.delay(1500)
             navController?.navigateUp()
         }
@@ -289,9 +280,9 @@ fun UpdateItineraryView(
                         CustomTextField(
                             value = itineraryViewModel.title,
                             onValueChange = itineraryViewModel::updateTitle,
-                            label = "Trip Title",
+                            label = "Judul Trip",
                             icon = Icons.Filled.Title,
-                            placeholder = "Enter your trip title"
+                            placeholder = "Masukkan judul trip anda"
                         )
 
                         // Date Fields Row
@@ -302,7 +293,7 @@ fun UpdateItineraryView(
                             CustomTextField(
                                 value = itineraryViewModel.start_date,
                                 onValueChange = itineraryViewModel::updateStartDate,
-                                label = "Start Date",
+                                label = "Tanggal Mulai",
                                 icon = Icons.Filled.CalendarToday,
                                 placeholder = "YYYY-MM-DD",
                                 modifier = Modifier.weight(1f)
@@ -311,7 +302,7 @@ fun UpdateItineraryView(
                             CustomTextField(
                                 value = itineraryViewModel.end_date,
                                 onValueChange = itineraryViewModel::updateEndDate,
-                                label = "End Date",
+                                label = "Tanggal Berakhir",
                                 icon = Icons.Filled.CalendarToday,
                                 placeholder = "YYYY-MM-DD",
                                 modifier = Modifier.weight(1f)
@@ -326,7 +317,7 @@ fun UpdateItineraryView(
                             CustomTextField(
                                 value = itineraryViewModel.estimate_start,
                                 onValueChange = itineraryViewModel::updateEstimateStart,
-                                label = "Estimate Start Time",
+                                label = "Perkiraan Waktu Mulai",
                                 icon = Icons.Filled.CalendarToday,
                                 placeholder = "HH:MM",
                                 modifier = Modifier.weight(1f)
@@ -335,7 +326,7 @@ fun UpdateItineraryView(
                             CustomTextField(
                                 value = itineraryViewModel.estimate_end,
                                 onValueChange = itineraryViewModel::updateEstimateEnd,
-                                label = "Estimate End Time",
+                                label = "Perkiraan Waktu Selesai",
                                 icon = Icons.Filled.CalendarToday,
                                 placeholder = "HH:MM",
                                 modifier = Modifier.weight(1f)
@@ -346,27 +337,27 @@ fun UpdateItineraryView(
                         CustomTextField(
                             value = itineraryViewModel.total_person,
                             onValueChange = itineraryViewModel::updateTotalPerson,
-                            label = "Total Participants",
+                            label = "Jumlah Partisipan",
                             icon = Icons.Filled.Person,
-                            placeholder = "Enter number of participants"
+                            placeholder = "Masukkan Jumlah Partisipan"
                         )
 
                         // Country Field
                         CustomTextField(
                             value = itineraryViewModel.country,
                             onValueChange = itineraryViewModel::updateCountry,
-                            label = "Country",
+                            label = "Negara",
                             icon = Icons.Filled.LocationOn,
-                            placeholder = "Enter destination country"
+                            placeholder = "Masukkan Negara Tujuan"
                         )
 
                         // Location Field
                         CustomTextField(
                             value = itineraryViewModel.location,
                             onValueChange = itineraryViewModel::updateLocation,
-                            label = "Location",
+                            label = "Lokasi",
                             icon = Icons.Filled.LocationOn,
-                            placeholder = "Enter specific location"
+                            placeholder = "Masukkan Lokasi Trip"
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -410,7 +401,7 @@ fun UpdateItineraryView(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Update Itinerary",
+                                text = "Simpan Itinerary",
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold

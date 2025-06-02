@@ -94,7 +94,7 @@ fun UpdateItineraryDayView(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Update Activity",
+                text = "Ubah Aktivitas",
                 color = Color.White,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
@@ -110,7 +110,7 @@ fun UpdateItineraryDayView(
                     ModernTextField(
                         value = day,
                         onValueChange = { day = it },
-                        label = "Day",
+                        label = "Hari",
                         icon = Icons.Filled.CalendarToday,
                         placeholder = "DD-MM-YYYY"
                     )
@@ -118,7 +118,7 @@ fun UpdateItineraryDayView(
                     ModernTextField(
                         value = start_Time,
                         onValueChange = { start_Time = it },
-                        label = "Start Time",
+                        label = "Waktu Mulai",
                         icon = Icons.Filled.Schedule,
                         placeholder = "09:00"
                     )
@@ -126,7 +126,7 @@ fun UpdateItineraryDayView(
                     ModernTextField(
                         value = end_Time,
                         onValueChange = { end_Time = it },
-                        label = "End Time",
+                        label = "Waktu Selesai",
                         icon = Icons.Filled.Schedule,
                         placeholder = "17:00"
                     )
@@ -134,7 +134,7 @@ fun UpdateItineraryDayView(
                     ModernTextField(
                         value = meeting_Time,
                         onValueChange = { meeting_Time = it },
-                        label = "Meeting Time",
+                        label = "Waktu Bertemu",
                         icon = Icons.Filled.Group,
                         placeholder = "08:30"
                     )
@@ -142,7 +142,7 @@ fun UpdateItineraryDayView(
                     OutlinedTextField(
                         value = activity_Description,
                         onValueChange = { activity_Description = it },
-                        label = { Text("Activity Description") },
+                        label = { Text("Deskripsi Aktivitas") },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 3,
                         maxLines = 5,
@@ -182,7 +182,7 @@ fun UpdateItineraryDayView(
                     ) {
                         Icon(Icons.Filled.Save, contentDescription = "Update")
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Update Activity")
+                        Text("Ubah")
                     }
 
                 }

@@ -144,7 +144,7 @@ fun ItineraryDayDetailView(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Activity Details",
+                            text = "Detail aktivitas",
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White,
@@ -257,7 +257,7 @@ fun ItineraryDayDetailView(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Today's Schedule",
+                            text = "Jadwal Hari Ini",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF2D3748)
@@ -276,7 +276,7 @@ fun ItineraryDayDetailView(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
                                 Text(
-                                    text = "No activities scheduled",
+                                    text = "Tidak ada aktivitas terjadwal",
                                     fontSize = 18.sp,
                                     fontWeight = FontWeight.Medium,
                                     color = Color(0xFF718096),
@@ -284,7 +284,7 @@ fun ItineraryDayDetailView(
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Add some activities to get started!",
+                                    text = "Tambah aktivitas untuk memulai",
                                     fontSize = 14.sp,
                                     color = Color(0xFFA0AEC0),
                                     textAlign = TextAlign.Center
@@ -475,7 +475,7 @@ private fun ModernActivityCard(activity: ItineraryDayModel,  navController: NavC
             ) {
                 Icon(Icons.Default.Edit, contentDescription = "Edit", tint = Color.White)
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Edit", color = Color.White)
+                Text("Ubah", color = Color.White)
             }
         }
     }

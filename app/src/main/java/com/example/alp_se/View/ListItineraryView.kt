@@ -95,7 +95,6 @@ fun ListItineraryView(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Icon with background
                     Box(
                         modifier = Modifier
                             .size(60.dp)
@@ -117,7 +116,7 @@ fun ListItineraryView(
 
                     // Title
                     Text(
-                        text = "My Itineraries",
+                        text = "Daftar itinerary",
                         color = Color.White,
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
@@ -128,7 +127,7 @@ fun ListItineraryView(
 
                     // Subtitle
                     Text(
-                        text = "Explore your upcoming adventures",
+                        text = "Jelajahi petuangalanmu berikutnya!",
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
@@ -144,21 +143,20 @@ fun ListItineraryView(
                     ) {
                         StatItem(
                             count = itineraries.size.toString(),
-                            label = "Trips"
+                            label = "Jadwal"
                         )
                         StatItem(
                             count = itineraries.sumOf { it.total_person }.toString(),
-                            label = "Total People"
+                            label = "Jumlah Orang"
                         )
                         StatItem(
                             count = itineraries.map { it.country }.toSet().size.toString(),
-                            label = "Countries"
+                            label = "Negara"
                         )
                     }
                 }
             }
 
-            // List Section
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -169,30 +167,48 @@ fun ListItineraryView(
                     .padding(top = 20.dp, bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(itineraries) { itinerary ->
-                    println("Card: ${itinerary.title}, ID: ${itinerary.id}")
-
-                    ItineraryCard(
-                        itinerary = itinerary,
-                        title = itinerary.title,
-                        startDate = formatDateString(itinerary.start_date),
-                        endDate = formatDateString(itinerary.end_date),
-                        location = itinerary.location,
-                        participantCount = itinerary.total_person,
-                        onEdit = { itineraryId ->
-                            println("Navigating to update view for ID: $itineraryId")
-                            // Fixed: Use navigation arguments instead of savedStateHandle
-                            navController?.navigate("${listScreen.UpdateItineraryView.name}/$itineraryId")
-                        },
-                        onDelete = { itineraryId ->
-                            itineraryViewModel.deleteItinerary(itineraryId)
-                        },
-                        onClick = {
-                            println("Navigating to day view for ID: ${itinerary.id}")
-                            navController?.currentBackStackEntry?.savedStateHandle?.set("itineraryId", itinerary.id)
-                            navController?.navigate(listScreen.ListItineraryDayView.name)
+                if (itineraries.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Belum ada itinerary. Buat dulu",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = Color.Gray
+                            )
                         }
-                    )
+                    }
+                } else {
+                    items(itineraries) { itinerary ->
+                        println("Card: ${itinerary.title}, ID: ${itinerary.id}")
+
+                        ItineraryCard(
+                            itinerary = itinerary,
+                            title = itinerary.title,
+                            startDate = formatDateString(itinerary.start_date),
+                            endDate = formatDateString(itinerary.end_date),
+                            location = itinerary.location,
+                            participantCount = itinerary.total_person,
+                            onEdit = { itineraryId ->
+                                // Fixed: Use navigation arguments instead of savedStateHandle
+                                navController?.navigate("${listScreen.UpdateItineraryView.name}/$itineraryId")
+                            },
+                            onDelete = { itineraryId ->
+                                itineraryViewModel.deleteItinerary(itineraryId)
+                            },
+                            onClick = {
+                                navController?.currentBackStackEntry?.savedStateHandle?.set(
+                                    "itineraryId",
+                                    itinerary.id
+                                )
+                                navController?.navigate(listScreen.ListItineraryDayView.name)
+                            }
+                        )
+                    }
                 }
 
                 // Bottom spacing

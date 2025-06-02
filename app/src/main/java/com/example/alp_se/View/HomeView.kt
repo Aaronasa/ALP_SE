@@ -105,7 +105,7 @@ fun HeroSection(isVisible: Boolean, navController: NavController?=null) {
 
             // Description
             Text(
-                text = "Make an Itinerary in a few clicks.",
+                text = "Buat itinerary dalam beberapa klik.",
                 fontSize = 20.sp,
                 color = Color(0xFF666666),
                 textAlign = TextAlign.Center

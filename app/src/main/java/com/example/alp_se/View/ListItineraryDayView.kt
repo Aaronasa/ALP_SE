@@ -366,7 +366,7 @@ fun ItineraryListScreen(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Daily Itinerary",
+                            text = "Itinerary Harian",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF2D3748)

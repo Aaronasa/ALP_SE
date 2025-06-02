@@ -22,7 +22,7 @@ class DefaultAppContainer(
     private val userDataStore: DataStore<Preferences>
 ) : AppContainer {
 
-    private val baseUrl = "http://192.168.0.112:3000/"
+    private val baseUrl = "http://172.20.10.2:3000/"
 
     // Retrofit initialization
     private fun initRetrofit(): Retrofit {

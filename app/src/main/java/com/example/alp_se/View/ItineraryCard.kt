@@ -199,7 +199,7 @@ fun ItineraryCard(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Duration",
+                            text = "Durasi",
                             color = Color.White.copy(alpha = 0.8f),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
@@ -238,7 +238,7 @@ fun ItineraryCard(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Location",
+                            text = "Lokasi",
                             color = Color.White.copy(alpha = 0.8f),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
@@ -261,13 +261,13 @@ fun ItineraryCard(
             onDismissRequest = { showDeleteDialog = false },
             title = {
                 Text(
-                    text = "Delete Itinerary",
+                    text = "Hapus Itinerary",
                     fontWeight = FontWeight.Bold
                 )
             },
             text = {
                 Text(
-                    text = "Are you sure you want to delete \"$title\"? This action cannot be undone."
+                    text = "Apakah anda yakin ingin menghapus \"$title\"? Aksi ini tidak bisa kembali."
                 )
             },
             confirmButton = {
@@ -278,7 +278,7 @@ fun ItineraryCard(
                     }
                 ) {
                     Text(
-                        text = "Delete",
+                        text = "Hapus",
                         color = Color.Red,
                         fontWeight = FontWeight.Bold
                     )
