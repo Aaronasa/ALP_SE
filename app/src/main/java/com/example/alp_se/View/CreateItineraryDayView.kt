@@ -111,7 +111,7 @@ fun CreateItineraryDayView(
                         onValueChange = { activity = activity.copy(start_time = it) },
                         label = "Start Time",
                         icon = Icons.Filled.Schedule,
-                        placeholder = "09:00"
+                        placeholder = "09.00"
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     ModernTextField(
@@ -119,7 +119,7 @@ fun CreateItineraryDayView(
                         onValueChange = { activity = activity.copy(end_time = it) },
                         label = "End Time",
                         icon = Icons.Filled.Schedule,
-                        placeholder = "17:00"
+                        placeholder = "17.00"
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     ModernTextField(
@@ -127,7 +127,7 @@ fun CreateItineraryDayView(
                         onValueChange = { activity = activity.copy(meeting_time = it) },
                         label = "Meeting Time",
                         icon = Icons.Filled.Group,
-                        placeholder = "08:30"
+                        placeholder = "08.30"
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
