@@ -47,7 +47,7 @@ fun ModernItineraryDayCard(
         Color(0xFF764ba2)
     )
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
+//    var isExpanded by remember { mutableStateOf(false) }
 
     // Format time display
     val timeDisplay = if (itineraryDay.start_time.isNotEmpty() && itineraryDay.end_time.isNotEmpty()) {
@@ -69,7 +69,7 @@ fun ModernItineraryDayCard(
                 spotColor = Color.Black.copy(alpha = 0.1f)
             )
             .clickable {
-                isExpanded = !isExpanded
+//                isExpanded = !isExpanded
                 onClick()
             }
             .animateContentSize(
@@ -85,7 +85,7 @@ fun ModernItineraryDayCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (isExpanded) 200.dp else 140.dp)
+//                    .height(if (isExpanded) 200.dp else 140.dp)
                     .background(
                         brush = Brush.horizontalGradient(
                             colors = gradientColors.map { it.copy(alpha = 0.1f) }
@@ -139,7 +139,7 @@ fun ModernItineraryDayCard(
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF2D3748),
-                            maxLines = if (isExpanded) Int.MAX_VALUE else 2,
+//                            maxLines = if (isExpanded) Int.MAX_VALUE else 2,
                             overflow = TextOverflow.Ellipsis
                         )
                     }

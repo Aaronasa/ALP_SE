@@ -42,12 +42,19 @@ class ItineraryDayViewModel(
     var endDate by mutableStateOf<String?>(null)
 
 
-    // State untuk response data
+
+
     private val _itineraryDayModel = MutableStateFlow<List<ItineraryDayModel>>(emptyList())
     val itineraryDayModel: StateFlow<List<ItineraryDayModel>> = _itineraryDayModel
 
     private val _statusMessage = MutableStateFlow<String?>(null)
     val statusMessage: StateFlow<String?> = _statusMessage.asStateFlow()
+
+    private val _showMenu = MutableStateFlow(false)
+    val showMenu: StateFlow<Boolean> = _showMenu
+
+    private val _selectedDay = MutableStateFlow<Int?>(null)
+    val selectedDay: StateFlow<Int?> = _selectedDay
 
     fun updateDay(value: String) { day = value }
     fun updateStartTime(value: String) { start_time = value }
@@ -57,6 +64,8 @@ class ItineraryDayViewModel(
     fun updateItineraryId(value: Int) { itineraryId = value }
     fun updateStartDate(value: String) { startDate = value }
     fun updateEndDate(value: String) { endDate = value }
+    fun showMenu(value: Boolean) { _showMenu.value = value }
+    fun selectDay(value: Int) { _selectedDay.value = value }
 
     fun clearStatusMessage() {
         _statusMessage.value = null

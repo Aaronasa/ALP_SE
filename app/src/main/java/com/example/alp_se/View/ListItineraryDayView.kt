@@ -171,10 +171,12 @@ fun ItineraryListScreen(
     onSharePressed: () -> Unit = {},
     onDayClicked: (Int) -> Unit = {}
 ) {
-    val context = LocalContext.current
-    var showMenu by remember { mutableStateOf(false) }
-    var selectedDay by remember { mutableStateOf<Int?>(null) }
     val viewModel: ItineraryDayViewModel = viewModel(factory = ItineraryDayViewModel.Factory)
+    val context = LocalContext.current
+    val showMenu by viewModel.showMenu.collectAsState()
+    val selectedDay by viewModel.selectedDay.collectAsState()
+
+
 
 
     Box(
@@ -225,7 +227,7 @@ fun ItineraryListScreen(
 
                         Box {
                             IconButton(
-                                onClick = { showMenu = true },
+                                onClick = { viewModel.showMenu(true)},
                                 modifier = Modifier
                                     .size(40.dp)
                                     .background(
@@ -242,19 +244,19 @@ fun ItineraryListScreen(
 
                             DropdownMenu(
                                 expanded = showMenu,
-                                onDismissRequest = { showMenu = false },
+                                onDismissRequest = { viewModel.showMenu(false) },
                             ) {
                                 DropdownMenuItem(
                                     text = { Text("Export as PDF") },
                                     onClick = {
-                                        showMenu = false
+                                        viewModel.showMenu(false)
                                         viewModel.exportToPdf(itineraryDays, context)
                                     }
                                 )
                                 DropdownMenuItem(
                                     text = { Text("Export as Excel") },
                                     onClick = {
-                                        showMenu = false
+                                        viewModel.showMenu(false)
                                         viewModel.exportToExcel(itineraryDays, context)
                                     }
                                 )
@@ -404,7 +406,7 @@ fun ItineraryListScreen(
                                 dayNumber = index + 1,
                                 gradientColors = getGradientForDay(index),
                                 onClick = {
-                                    selectedDay = index
+                                    viewModel.selectDay(index)
                                     onDayClicked(index)
                                 },
                                 onDeleteAllByDate = {
