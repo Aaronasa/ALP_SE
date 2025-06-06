@@ -38,6 +38,9 @@ class ItineraryDayViewModel(
     var activity_description by mutableStateOf("")
     var meeting_time by mutableStateOf("")
     var itineraryId by mutableStateOf(0)
+    var startDate by mutableStateOf<String?>(null)
+    var endDate by mutableStateOf<String?>(null)
+
 
     // State untuk response data
     private val _itineraryDayModel = MutableStateFlow<List<ItineraryDayModel>>(emptyList())
@@ -52,6 +55,8 @@ class ItineraryDayViewModel(
     fun updateActivityDescription(value: String) { activity_description = value }
     fun updateMeetingTime(value: String) { meeting_time = value }
     fun updateItineraryId(value: Int) { itineraryId = value }
+    fun updateStartDate(value: String) { startDate = value }
+    fun updateEndDate(value: String) { endDate = value }
 
     fun clearStatusMessage() {
         _statusMessage.value = null

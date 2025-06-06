@@ -33,23 +33,19 @@ fun CreateItineraryDayView(
     navController: NavController? = null,
     viewModel: ItineraryDayViewModel = viewModel(factory = ItineraryDayViewModel.Factory)
 ) {
-    var itineraryId by remember { mutableStateOf(0) }
-    var startDate by remember { mutableStateOf<String?>(null) }
-    var endDate by remember { mutableStateOf<String?>(null) }
-
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         navController?.previousBackStackEntry?.savedStateHandle?.let { handle ->
-            itineraryId = handle.get<Int>("itineraryId") ?: 0
-            startDate = handle.get<String>("startDate")
-            endDate = handle.get<String>("endDate")
-            println("✅ itineraryId loaded: $itineraryId")
+            viewModel.updateItineraryId(handle.get<Int>("itineraryId") ?: 0)
+            handle.get<String>("startDate")?.let { viewModel.updateStartDate(it) }
+            handle.get<String>("endDate")?.let { viewModel.updateEndDate(it) }
+            println("✅ itineraryId loaded: ${viewModel.itineraryId}")
         }
     }
 
-    if (itineraryId <= 0) {
+    if (viewModel.itineraryId <= 0) {
         Text(
             text = "Loading itinerary data...",
             color = Color.White,
@@ -59,11 +55,10 @@ fun CreateItineraryDayView(
         return
     }
 
-    var activity by remember { mutableStateOf(ItineraryDayModel()) }
 
     val formatter = remember { SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()) }
-    val startDateObj = remember(startDate) { startDate?.let { formatter.parse(it) } }
-    val endDateObj = remember(endDate) { endDate?.let { formatter.parse(it) } }
+    val startDateObj = remember(viewModel.startDate) { viewModel.startDate?.let { formatter.parse(it) } }
+    val endDateObj = remember(viewModel.endDate) { viewModel.endDate?.let { formatter.parse(it) } }
 
     Box(
         modifier = Modifier
@@ -99,40 +94,40 @@ fun CreateItineraryDayView(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     ModernTextField(
-                        value = activity.day,
-                        onValueChange = { activity = activity.copy(day = it) },
+                        value = viewModel.day,
+                        onValueChange = viewModel::updateDay,
                         label = "Day",
                         icon = Icons.Filled.CalendarToday,
                         placeholder = "DD-MM-YYYY"
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     ModernTextField(
-                        value = activity.start_time,
-                        onValueChange = { activity = activity.copy(start_time = it) },
+                        value = viewModel.start_time,
+                        onValueChange = viewModel::updateStartTime,
                         label = "Start Time",
                         icon = Icons.Filled.Schedule,
                         placeholder = "09:00"
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     ModernTextField(
-                        value = activity.end_time,
-                        onValueChange = { activity = activity.copy(end_time = it) },
+                        value = viewModel.end_time,
+                        onValueChange = viewModel::updateEndTime,
                         label = "End Time",
                         icon = Icons.Filled.Schedule,
                         placeholder = "17:00"
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     ModernTextField(
-                        value = activity.meeting_time,
-                        onValueChange = { activity = activity.copy(meeting_time = it) },
+                        value = viewModel.meeting_time,
+                        onValueChange = viewModel::updateMeetingTime,
                         label = "Meeting Time",
                         icon = Icons.Filled.Group,
                         placeholder = "08:30"
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
-                        value = activity.activity_description,
-                        onValueChange = { activity = activity.copy(activity_description = it) },
+                        value = viewModel.activity_description,
+                        onValueChange = viewModel::updateActivityDescription,
                         label = { Text("Activity Description") },
                         modifier = Modifier.fillMaxWidth(),
                         minLines = 3,
@@ -142,10 +137,10 @@ fun CreateItineraryDayView(
                     Spacer(modifier = Modifier.height(20.dp))
                     Button(
                         onClick = {
-                            val startDateFormatted = formatToISOString(activity.day, activity.start_time)
-                            val endDateFormatted = formatToISOString(activity.day, activity.end_time)
-                            val meetingTimeFormatted = normalizeTimeFormat(activity.meeting_time)
-                            val normalizedDay = normalizeDateFormat(activity.day)
+                            val startDateFormatted = formatToISOString(viewModel.day, viewModel.start_time)
+                            val endDateFormatted = formatToISOString(viewModel.day, viewModel.end_time)
+                            val meetingTimeFormatted = normalizeTimeFormat(viewModel.meeting_time)
+                            val normalizedDay = normalizeDateFormat(viewModel.day)
 
                             val inputDay = try {
                                 SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(normalizedDay)
@@ -174,15 +169,15 @@ fun CreateItineraryDayView(
                                 }
 
                                 // ✅ Buat aktivitas
-                                if (itineraryId > 0) {
+                                if (viewModel.itineraryId > 0) {
                                     viewModel.createItineraryDay(
                                         CreateItineraryDayRequest(
                                             day = normalizedDay,
                                             start_time = startDateFormatted,
                                             end_time = endDateFormatted,
-                                            activity_description = activity.activity_description,
+                                            activity_description = viewModel.activity_description,
                                             meeting_time = meetingTimeFormatted,
-                                            itineraryId = itineraryId
+                                            itineraryId = viewModel.itineraryId
                                         )
                                     )
                                     navController?.navigate(listScreen.ListItineraryDayView.name) {
