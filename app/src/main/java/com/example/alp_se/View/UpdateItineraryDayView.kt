@@ -38,20 +38,14 @@ fun UpdateItineraryDayView(
     navController: NavController,
     viewModel: ItineraryDayViewModel = viewModel(factory = ItineraryDayViewModel.Factory)
 ) {
-
-
     val editId = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("editId")
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-
     val itineraryDays by viewModel.itineraryDayModel.collectAsState()
     val updatedActivity = itineraryDays.find { it.id == editId }
-
-
     LaunchedEffect(Unit) {
         viewModel.getAllItineraryDays()
     }
-
 
 
     if (updatedActivity == null) {

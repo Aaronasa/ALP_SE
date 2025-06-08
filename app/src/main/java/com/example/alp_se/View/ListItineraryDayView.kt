@@ -43,13 +43,10 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListItineraryDayView(
     navController: NavController = rememberNavController(),
-    onBackPressed: () -> Unit = {},
     onSharePressed: () -> Unit = {},
-    onDayClicked: (Int) -> Unit = {}
 ) {
     val itineraryId = navController
         .previousBackStackEntry

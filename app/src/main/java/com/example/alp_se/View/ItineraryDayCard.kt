@@ -35,7 +35,6 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModernItineraryDayCard(
     itineraryDay: ItineraryDayModel,
@@ -47,8 +46,6 @@ fun ModernItineraryDayCard(
         Color(0xFF764ba2)
     )
 ) {
-//    var isExpanded by remember { mutableStateOf(false) }
-
     // Format time display
     val timeDisplay = if (itineraryDay.start_time.isNotEmpty() && itineraryDay.end_time.isNotEmpty()) {
         "${itineraryDay.start_time} - ${itineraryDay.end_time}"
@@ -198,7 +195,7 @@ private fun InfoChip(
     text: String,
     color: Color
 ) {
-    Surface(
+   Surface(
         color = color.copy(alpha = 0.1f),
         shape = RoundedCornerShape(12.dp)
     ) {

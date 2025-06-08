@@ -40,10 +40,7 @@ class ItineraryDayViewModel(
     var itineraryId by mutableStateOf(0)
     var startDate by mutableStateOf<String?>(null)
     var endDate by mutableStateOf<String?>(null)
-
-
-
-
+    
     private val _itineraryDayModel = MutableStateFlow<List<ItineraryDayModel>>(emptyList())
     val itineraryDayModel: StateFlow<List<ItineraryDayModel>> = _itineraryDayModel
 
